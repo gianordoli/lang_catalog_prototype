@@ -63,6 +63,8 @@ app.main = (function(){
 	var text = g.append("text")
 				.attr("dy", arcWeight/2);
 	
+	// TO-DO: add '2nd_line: true/false' as a parameter to the data
+	// so we can determine the text offset beforehand
 	text.append("textPath")
 	    .attr("xlink:href",	function(d, i){
 	    	return '#arc_' + i;
@@ -74,26 +76,19 @@ app.main = (function(){
 			// If we have 2 words...
 			if(fullText.indexOf(" ") > -1){
 				txt = fullText.substring(0, fullText.indexOf(" "));
+				
+				var secondLineTxt = fullText.substring(fullText.indexOf(" ") + 1, fullText.length);
+				var parent = d3.select(this.parentNode);
+				appendSecondLine(parent, secondLineTxt, '#arc_' + i);
 			}
 			return txt;
 		});	
 
-	text.append("textPath")
-	    .attr("xlink:href",	function(d, i){
-	    	return '#arc_' + i;
-	    })
-	    // .attr("startOffset", "50%")
-		.text(function(d, i) {
-			var fullText = d.data.path_of_study;
-			var txt = fullText;
-			// If we have 2 words...
-			if(txt.indexOf(" ") > -1){
-				var secondLineTxt = fullText.substring(fullText.indexOf(" ") + 1, fullText.length);
-			}
-			return secondLineTxt;
-		});			
-				
-				// .attr("fill", "black");
+	function appendSecondLine(parent, txt, arcId){
+		parent.append("textPath")
+		    .attr("xlink:href",	arcId)
+			.text(txt);
+	};			
 
 	// // Add a text label.
 	// var text = svg.append("text")
