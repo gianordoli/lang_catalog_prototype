@@ -59,23 +59,25 @@ app.main = (function(){
 			return 'rgba(0, 140, 200, ' + (i / 10) +')'	
 		});
 
-	g.append("text")
-		.attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
-		.attr("dy", ".35em")
-		.attr("fill", "black")
-		.text(function(d, i) {
-			return d.data.path_of_study;
-		});
+	// Labels
+	var text = g.append("text")
+				// .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+				.attr("dy", ".35em")
+				.append("textPath")
+			    .attr("xlink:href",	function(d, i){
+			    	return '#arc_' + i;
+			    })
+				.text(function(d, i) {
+					return d.data.path_of_study;
+				});				
+				// .attr("fill", "black");
 
 	// // Add a text label.
 	// var text = svg.append("text")
 	//     .attr("x", 6)
 	//     .attr("dy", 15);
 
-	// text.append("textPath")
-	//     .attr("stroke","black")
-	//     .attr("xlink:href","#path1")
-	//     .text("abc");
+	text
 
 
 	// chart.selectAll("arc")
