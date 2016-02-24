@@ -2,13 +2,12 @@ var app = app || {};
 
 app.main = (function(){
 
-    var margin = {top: 100, right: 100, bottom: 100, left: 100};
-    var width  = window.innerWidth - margin.left - margin.right;
-    var height = window.innerHeight - margin.top - margin.bottom;
+    var width  = window.innerWidth;
+    var height = window.innerHeight;
 
 	// Categories change from term to term. Think about how to handle arc updates
 	var loadCategories = function(){
-		d3.csv('assets/data/fall_2015_categories.tsv', function(error, data) {
+		d3.csv('assets/data/fall_2015_path_of_study.tsv', function(error, data) {
 			if (error) return console.warn(error);
 			console.log('loaded:');
 			console.log(data);
@@ -18,9 +17,22 @@ app.main = (function(){
 
 	var displayCategories = function(dataset){
 
+	// FUNCTIONS
 	var xScale = d3.scale.ordinal()
 					.domain(d3.range(dataset.length))	// INPUT
 					.rangeRoundBands([0, width], 0.5);
+
+	// D3's SVG shape helper function
+	var arc = d3.svg.arc()
+			    .outerRadius(490/2)
+			    .innerRadius(550/2);
+
+	// D3's data helper function
+	var pie = d3.layout.pie()
+			    .sort(null)
+			    .value(function(d, i) { return 1; }); // Any value would do. We're just telling D3 that all arcs are equal
+	// console.log(pie(dataset));
+
 
 	var svg = d3.select("body")
 	            .append("svg")
@@ -28,19 +40,76 @@ app.main = (function(){
 	            .attr("height", window.innerHeight);
 
 	var chart = svg.append("g")
-	               .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	               .attr("transform", "translate(" + width/2 + "," + height/2 + ")");
+	
+	// Each combo of arc and text will be inside this group
+	var g = chart.selectAll(".arc")
+				.data(pie(dataset))
+				.enter()
+				.append("g")
+				.attr("class", "arc");
 
-	chart.selectAll("circle")
-	    .data(dataset)
-	    .enter()
-	    .append("rect")
-	    .attr("x", function(d, i){
-	    	return xScale(i);
-	    })
-	    .attr("y", 0)
-	    .attr("height", 40)
-	    .attr("width",  xScale.rangeBand())
-	    .attr("fill", "rgba(0, 140, 200, 0.3)");
+	// Arcs
+  	g.append("path")
+		.attr("d", arc)
+		.attr("id", function(d, i){
+			return 'arc_' + i;
+		})
+		.style("fill", function(d, i){
+			return 'rgba(0, 140, 200, ' + (i / 10) +')'	
+		});
+
+	g.append("text")
+		.attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+		.attr("dy", ".35em")
+		.attr("fill", "black")
+		.text(function(d, i) {
+			return d.data.path_of_study;
+		});
+
+	// // Add a text label.
+	// var text = svg.append("text")
+	//     .attr("x", 6)
+	//     .attr("dy", 15);
+
+	// text.append("textPath")
+	//     .attr("stroke","black")
+	//     .attr("xlink:href","#path1")
+	//     .text("abc");
+
+
+	// chart.selectAll("arc")
+	//     .data(dataset)
+	//     .enter()
+	//     .append("rect")
+	//     .attr("x", function(d, i){
+	//     	return xScale(i);
+	//     })
+	//     .attr("y", 0)
+	//     .attr("height", 40)
+	//     .attr("width",  xScale.rangeBand())
+	//     .attr("fill", "rgba(0, 140, 200, 0.3)");
+
+	// svg.selectAll(".arc")
+	//       .data(pie(data))
+	//     .enter().append("g")
+	//       .attr("class", "arc");
+
+	//   g.append("path")
+	//       .attr("d", arc)
+	//       .style("fill", function(d) { return color(d.data.age); });
+
+	// chart.selectAll("circle")
+	//     .data(dataset)
+	//     .enter()
+	//     .append("rect")
+	//     .attr("x", function(d, i){
+	//     	return xScale(i);
+	//     })
+	//     .attr("y", 0)
+	//     .attr("height", 40)
+	//     .attr("width",  xScale.rangeBand())
+	//     .attr("fill", "rgba(0, 140, 200, 0.3)");
 
 	// // Now appending the axes
 	// chart.append("g")
