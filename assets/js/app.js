@@ -17,15 +17,15 @@ app.main = (function(){
 
 	var displayCategories = function(dataset){
 
-	// FUNCTIONS
-	var xScale = d3.scale.ordinal()
-					.domain(d3.range(dataset.length))	// INPUT
-					.rangeRoundBands([0, width], 0.5);
+	// VARS
+	var radius = 490/2;
+	var arcWeight = (550 - 490)/2;
 
+	// FUNCTIONS
 	// D3's SVG shape helper function
 	var arc = d3.svg.arc()
-			    .outerRadius(490/2)
-			    .innerRadius(550/2);
+			    .outerRadius(radius)
+			    .innerRadius(radius + arcWeight);
 
 	// D3's data helper function
 	var pie = d3.layout.pie()
@@ -61,15 +61,38 @@ app.main = (function(){
 
 	// Labels
 	var text = g.append("text")
-				// .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
-				.attr("dy", ".35em")
-				.append("textPath")
-			    .attr("xlink:href",	function(d, i){
-			    	return '#arc_' + i;
-			    })
-				.text(function(d, i) {
-					return d.data.path_of_study;
-				});				
+				.attr("dy", arcWeight/2);
+	
+	text.append("textPath")
+	    .attr("xlink:href",	function(d, i){
+	    	return '#arc_' + i;
+	    })
+	    // .attr("startOffset", "50%")
+		.text(function(d, i) {
+			var fullText = d.data.path_of_study;
+			var txt = fullText;
+			// If we have 2 words...
+			if(fullText.indexOf(" ") > -1){
+				txt = fullText.substring(0, fullText.indexOf(" "));
+			}
+			return txt;
+		});	
+
+	text.append("textPath")
+	    .attr("xlink:href",	function(d, i){
+	    	return '#arc_' + i;
+	    })
+	    // .attr("startOffset", "50%")
+		.text(function(d, i) {
+			var fullText = d.data.path_of_study;
+			var txt = fullText;
+			// If we have 2 words...
+			if(txt.indexOf(" ") > -1){
+				var secondLineTxt = fullText.substring(fullText.indexOf(" ") + 1, fullText.length);
+			}
+			return secondLineTxt;
+		});			
+				
 				// .attr("fill", "black");
 
 	// // Add a text label.
@@ -77,7 +100,9 @@ app.main = (function(){
 	//     .attr("x", 6)
 	//     .attr("dy", 15);
 
-	text
+// < text  text-anchor="middle">
+//             <textPath  xlink:href="#tp3">CHANGE</textPath>
+// </text>
 
 
 	// chart.selectAll("arc")
