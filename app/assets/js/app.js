@@ -76,28 +76,29 @@ app.main = (function(){
 			});			
 
 		// Labels
+		// <text>
 		var text = g.append("text")
 		
-		// 1st Line
-		var textPath = text.append("textPath")		
-			    .attr("xlink:href",	function(d, i){
-			    	return '#arc_' + i;
-			    });
+			// <textPath>
+			var textPath = text.append("textPath")		
+				    .attr("xlink:href",	function(d, i){
+				    	return '#arc_' + i;
+				    });
 
-		// 2nd Line
-		textPath.append('tspan')
-				.text(function(d, i){
-						return d.data['1stLine'];
-				})		
-				.attr("dx", 5)
-				.attr("dy", function(d, i){
-					if(!d.data.hasOwnProperty('2ndLine')){
-						return arcWeight/2;
-					}else{
-						return arcWeight/3;
-					}
-				})				
-
+				// <tspan> 1stLine
+				textPath.append('tspan')
+						.text(function(d, i){
+								return d.data['1stLine'];
+						})		
+						.attr("dx", 5)
+						.attr("dy", function(d, i){
+							if(!d.data.hasOwnProperty('2ndLine')){
+								return arcWeight/2;
+							}else{
+								return arcWeight/3;
+							}
+						})
+				// <tspan> 2ndLine
 				.each(function(d){
 					// console.log(d3.select(this));
 					if(d.data.hasOwnProperty('2ndLine')){
@@ -110,46 +111,6 @@ app.main = (function(){
 								});
 					}
 				});
-
-		// textPath.append('tspan')
-		// 		.attr("dx", '2.5%')
-		// 		.attr("dy", function(d, i){
-		// 			if(!d.data.hasOwnProperty('2ndLine')){
-		// 				return arcWeight/2;
-		// 			}else{
-		// 				return arcWeight/3;
-		// 			}
-		// 		})				
-		// 		.text(function(d, i){
-		// 			// if(d.data.hasOwnProperty('2ndLine')){
-		// 				return d.data['1stLine'];
-		// 			// }
-		// 		});
-
-				// .text(function(d, i){
-				// 	if(d.data.hasOwnProperty('2ndLine')){
-				// 		return d.data['2ndLine'];
-				// 	}
-				// });				
-
-						// txt = fullText.substring(0, fullText.indexOf(" "));
-						
-						// var secondLineTxt = fullText.substring(fullText.indexOf(" ") + 1, fullText.length);
-						// var parent = d3.select(this.parentNode);
-						// // appendSecondLine(parent, secondLineTxt, '#arc_' + i);
-						// // console.log(d3.select(this.parentNode));
-						// d3.select(this).append('tspan')
-						// .text('Hello! This is a test');				
-
-		function appendSecondLine(parent, txt, arcId){
-
-			// parent.append('tspan')
-			// 		.text('Hello! This is a test');
-			parent.append("textPath")
-				    .attr("xlink:href",	arcId)
-					.attr("y", 60)
-					.text(txt);
-		};
 	}
 
 	var init = function(){
