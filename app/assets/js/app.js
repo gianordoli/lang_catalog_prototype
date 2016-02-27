@@ -4,6 +4,7 @@ app.main = (function(){
 
     var width  = window.innerWidth;
     var height = window.innerHeight;
+    var svg;
     var courses;
 
 	/*------------------ CATEGORIES -------------------*/
@@ -11,7 +12,7 @@ app.main = (function(){
 	var loadCategories = function(){
 		d3.csv('assets/data/fall_2015_path_of_study.tsv', function(error, data) {
 			if (error) return console.warn(error);
-			console.log('loaded:');
+			console.log('Loaded categories:');
 			console.log(data);
 			console.log('Checking number of lines...');
 			for(var i = 0; i < data.length; i++){
@@ -51,11 +52,11 @@ app.main = (function(){
 				    .value(function(d, i) { return 1; }); // Any value would do. We're just telling D3 that all arcs are equal
 		// console.log(pie(dataset));
 
-		var svg = d3.select("body")
-		            .append("svg")
-		            .attr("width", window.innerWidth)
-		            .attr("height", window.innerHeight)
-		            ;
+		svg = d3.select("body")
+	            .append("svg")
+	            .attr("width", window.innerWidth)
+	            .attr("height", window.innerHeight)
+	            ;
 
 		var chart = svg.append("g")
 		               .attr("transform", "translate(" + width/2 + "," + height/2 + ")")
@@ -79,7 +80,8 @@ app.main = (function(){
 				return 'hsla(180, 50%, 50%, ' + (i / 10) +')'	
 			})
 			.on('click', function(d, i){
-				filterCoursesBy(d.data.path_of_study);
+				var filterered = filterCoursesBy(d.data.path_of_study);
+				displayCourses(filterered);
 			})
 			;
 
@@ -133,27 +135,112 @@ app.main = (function(){
 	var loadCourses = function(){
 		d3.json('assets/data/lang_courses_fall_2015.json', function(error, data) {
 			if (error) return console.warn(error);
-			console.log('loaded:');
+			console.log('Loaded courses:');
 			console.log(data);
 			courses = data;
 		});
 	};
 
-	var displayCourses = function(obj){
-
-	};
-
 	var filterCoursesBy = function(pathOfStudy){
-		var filteredCourses = {};
+		var filteredCourses = [];
 		for(var courseNumber in courses){
 			if(courses[courseNumber]['path_of_study'].indexOf(pathOfStudy) > -1){
 				// console.log(courses[courseNumber]['path_of_study']);
-				filteredCourses[courseNumber] = courses[courseNumber];
+				filteredCourses.push({
+					courseNumber: courseNumber,
+					title: courses[courseNumber]['title'],
+					path_of_study: courses[courseNumber]['path_of_study']
+				});
 			}
 		}
 		// console.log(filteredCourses);
 		return filteredCourses;
 	};
+
+	var displayCourses = function(data){
+
+// var nodes = d3.range(200).map(function() { return {radius: Math.random() * 12 + 4}; }),
+//     root = nodes[0],
+//     color = d3.scale.category10();
+
+		console.log(data);
+		var nodes = data;
+	    var root = nodes[0];
+		root.radius = 0;
+		root.fixed = true;
+
+		// Adding a radius to our objects
+		for(var i = 0; i < nodes.length; i++){
+			nodes[i]['radius'] = 12;
+		};
+		// console.log(nodes);
+
+		var force = d3.layout.force()
+		    .gravity(0.05)
+		    .charge(function(d, i) { return i ? 0 : -2000; })
+		    .nodes(nodes)
+		    .size([width, height]);
+		force.start();
+
+		var coursesChart = svg.append("g");
+	
+		var circles = coursesChart.selectAll("circle")
+			.data(nodes.slice(1))
+			.enter()
+			.append("circle")
+		    .attr("r", function(d, i){
+		    	return d.radius;
+		    })
+		    .style("fill", 'hsla(0, 50%, 50%, 0.5)')
+		    .on('click', function(d, i){
+		    	console.log(d);
+		    })
+		    ;
+
+		force.on("tick", function(e) {
+		  var q = d3.geom.quadtree(nodes),
+		      i = 0,
+		      n = nodes.length;
+
+		  while (++i < n) q.visit(collide(nodes[i]));
+
+		  coursesChart.selectAll("circle")
+		      .attr("cx", function(d) { return d.x; })
+		      .attr("cy", function(d) { return d.y; });
+		});
+
+
+		svg.on("mousemove", function() {
+		  var p1 = d3.mouse(this);
+		  root.px = p1[0];
+		  root.py = p1[1];
+		  force.resume();
+		});		
+
+		function collide(node) {
+		  var r = node.radius + 16,
+		      nx1 = node.x - r,
+		      nx2 = node.x + r,
+		      ny1 = node.y - r,
+		      ny2 = node.y + r;
+		  return function(quad, x1, y1, x2, y2) {
+		    if (quad.point && (quad.point !== node)) {
+		      var x = node.x - quad.point.x,
+		          y = node.y - quad.point.y,
+		          l = Math.sqrt(x * x + y * y),
+		          r = node.radius + quad.point.radius;
+		      if (l < r) {
+		        l = (l - r) / l * .5;
+		        node.x -= x *= l;
+		        node.y -= y *= l;
+		        quad.point.x += x;
+		        quad.point.y += y;
+		      }
+		    }
+		    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+		  };
+		}		    
+	};	
 
 	var init = function(){
 		console.log('Called init');
