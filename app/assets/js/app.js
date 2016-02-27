@@ -53,22 +53,23 @@ app.main = (function(){
 		// console.log(pie(dataset));
 
 		svg = d3.select("body")
-	            .append("svg")
-	            .attr("width", window.innerWidth)
-	            .attr("height", window.innerHeight)
-	            ;
+            .append("svg")
+            .attr("width", window.innerWidth)
+            .attr("height", window.innerHeight)
+            ;
 
-		var chart = svg.append("g")
-		               .attr("transform", "translate(" + width/2 + "," + height/2 + ")")
-		               ;
+		var categoriesChart = svg.append("g")
+			.attr('id', 'categories-chart')
+			.attr("transform", "translate(" + width/2 + "," + height/2 + ")")
+			;
 		
 		// Each combo of arc and text will be inside this group
-		var g = chart.selectAll(".arc")
-					.data(pie(dataset))
-					.enter()
-					.append("g")
-					.attr("class", "arc")
-					;
+		var g = categoriesChart.selectAll(".arc")
+			.data(pie(dataset))
+			.enter()
+			.append("g")
+			.attr("class", "arc")
+			;
 
 		// Arcs
 	  	g.append("path")
@@ -80,8 +81,17 @@ app.main = (function(){
 				return 'hsla(180, 50%, 50%, ' + (i / 10) +')'	
 			})
 			.on('click', function(d, i){
+				//
 				var filterered = filterCoursesBy(d.data.path_of_study);
-				displayCourses(filterered);
+				
+				// Get anchor point
+				var coords = this.getPointAtLength(this.getTotalLength()*0.7);
+				displayCourses(filterered, coords);
+				// categoriesChart.append('circle')
+				// 	.attr('cx', coords.x)
+				// 	.attr('cy', coords.y)
+				// 	.attr('r', 20)
+				// 	.attr('fill', 'black');
 			})
 			;
 
@@ -91,24 +101,24 @@ app.main = (function(){
 		
 			// <textPath>
 			var textPath = text.append("textPath")		
-				    .attr("xlink:href",	function(d, i){
-				    	return '#arc_' + i;
-				    })
-				    .attr("startOffset", 35)
-				    ;
+			    .attr("xlink:href",	function(d, i){
+			    	return '#arc_' + i;
+			    })
+			    .attr("startOffset", 35)
+			    ;
 
 				// <tspan> 1stLine
 				textPath.append('tspan')
-						.text(function(d, i){
-								return d.data['1stLine'];
-						})
-						.attr("dy", function(d, i){
-							if(!d.data.hasOwnProperty('2ndLine')){
-								return arcWeight/2;
-							}else{
-								return arcWeight/3;
-							}
-						})
+					.text(function(d, i){
+							return d.data['1stLine'];
+					})
+					.attr("dy", function(d, i){
+						if(!d.data.hasOwnProperty('2ndLine')){
+							return arcWeight/2;
+						}else{
+							return arcWeight/3;
+						}
+					})
 				// <tspan> 2ndLine
 				.each(function(d){
 					// console.log(d3.select(this));
@@ -116,16 +126,16 @@ app.main = (function(){
 						var parent = d3.select(this.parentNode);
 						var firstLineWidth = this.parentNode.getComputedTextLength();
 						parent.append('tspan')
-								.text(function(d, i){
-										return d.data['2ndLine'];
-								})
-								.each(function(d){
-									var secondLineWidth = this.getComputedTextLength();
-									d3.select(this).attr("dx", -(firstLineWidth + secondLineWidth)/2)
-												   .attr("dy", arcWeight/3)
-												   ;
-								})
-								;
+							.text(function(d, i){
+									return d.data['2ndLine'];
+							})
+							.each(function(d){
+								var secondLineWidth = this.getComputedTextLength();
+								d3.select(this).attr("dx", -(firstLineWidth + secondLineWidth)/2)
+											   .attr("dy", arcWeight/3)
+											   ;
+							})
+							;
 					}
 				})
 				;
@@ -157,13 +167,9 @@ app.main = (function(){
 		return filteredCourses;
 	};
 
-	var displayCourses = function(data){
+	var displayCourses = function(data, coords){
 
-// var nodes = d3.range(200).map(function() { return {radius: Math.random() * 12 + 4}; }),
-//     root = nodes[0],
-//     color = d3.scale.category10();
-
-		console.log(data);
+		// console.log(data);
 		var nodes = data;
 	    var root = nodes[0];
 		root.radius = 0;
@@ -177,12 +183,18 @@ app.main = (function(){
 
 		var force = d3.layout.force()
 		    .gravity(0.05)
-		    .charge(function(d, i) { return i ? 0 : -2000; })
+		    .charge(function(d, i) {
+		    	return -100;
+		    	// console.log(i);
+		    	// return i ? 0 : 1000;
+		    })
 		    .nodes(nodes)
 		    .size([width, height]);
 		force.start();
-
-		var coursesChart = svg.append("g");
+		
+		var coursesChart = svg.append("g")
+			.attr('id', 'courses-chart')		
+			;
 	
 		var circles = coursesChart.selectAll("circle")
 			.data(nodes.slice(1))
@@ -208,7 +220,6 @@ app.main = (function(){
 		      .attr("cx", function(d) { return d.x; })
 		      .attr("cy", function(d) { return d.y; });
 		});
-
 
 		svg.on("mousemove", function() {
 		  var p1 = d3.mouse(this);
