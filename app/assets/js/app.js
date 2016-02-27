@@ -4,6 +4,7 @@ app.main = (function(){
 
     var width  = window.innerWidth;
     var height = window.innerHeight;
+    var courses;
 
 	// Categories change from term to term. Think about how to handle arc updates
 	var loadCategories = function(){
@@ -74,9 +75,13 @@ app.main = (function(){
 				return 'arc_' + i;
 			})
 			.style("fill", function(d, i){
-				return 'hsla(0, 100%, 50%, ' + (i / 10) +')'	
+				return 'hsla(180, 50%, 50%, ' + (i / 10) +')'	
 			})
-			;			
+			.on('click', function(d, i){
+				// console.log(d);
+				console.log(courses);
+			})
+			;
 
 		// Labels
 		// <text>
@@ -124,9 +129,19 @@ app.main = (function(){
 				;
 	}
 
+	var loadCourses = function(){
+		d3.csv('assets/data/fall_2015_courses.tsv', function(error, data) {
+			if (error) return console.warn(error);
+			console.log('loaded:');
+			console.log(data);
+			courses = data;
+		});
+	};
+
 	var init = function(){
 		console.log('Called init');
 		loadCategories();
+		loadCourses();
 	};
 
 	return {
