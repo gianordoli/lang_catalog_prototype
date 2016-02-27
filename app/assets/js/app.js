@@ -49,21 +49,23 @@ app.main = (function(){
 				    .value(function(d, i) { return 1; }); // Any value would do. We're just telling D3 that all arcs are equal
 		// console.log(pie(dataset));
 
-
 		var svg = d3.select("body")
 		            .append("svg")
 		            .attr("width", window.innerWidth)
-		            .attr("height", window.innerHeight);
+		            .attr("height", window.innerHeight)
+		            ;
 
 		var chart = svg.append("g")
-		               .attr("transform", "translate(" + width/2 + "," + height/2 + ")");
+		               .attr("transform", "translate(" + width/2 + "," + height/2 + ")")
+		               ;
 		
 		// Each combo of arc and text will be inside this group
 		var g = chart.selectAll(".arc")
 					.data(pie(dataset))
 					.enter()
 					.append("g")
-					.attr("class", "arc");
+					.attr("class", "arc")
+					;
 
 		// Arcs
 	  	g.append("path")
@@ -72,8 +74,9 @@ app.main = (function(){
 				return 'arc_' + i;
 			})
 			.style("fill", function(d, i){
-				return 'rgba(0, 140, 200, ' + (i / 10) +')'	
-			});			
+				return 'hsla(0, 100%, 50%, ' + (i / 10) +')'	
+			})
+			;			
 
 		// Labels
 		// <text>
@@ -83,14 +86,15 @@ app.main = (function(){
 			var textPath = text.append("textPath")		
 				    .attr("xlink:href",	function(d, i){
 				    	return '#arc_' + i;
-				    });
+				    })
+				    .attr("startOffset", 35)
+				    ;
 
 				// <tspan> 1stLine
 				textPath.append('tspan')
 						.text(function(d, i){
 								return d.data['1stLine'];
-						})		
-						.attr("dx", 5)
+						})
 						.attr("dy", function(d, i){
 							if(!d.data.hasOwnProperty('2ndLine')){
 								return arcWeight/2;
@@ -103,14 +107,21 @@ app.main = (function(){
 					// console.log(d3.select(this));
 					if(d.data.hasOwnProperty('2ndLine')){
 						var parent = d3.select(this.parentNode);
+						var firstLineWidth = this.parentNode.getComputedTextLength();
 						parent.append('tspan')
-								.attr("dx", -this.getComputedTextLength())
-								.attr("dy", arcWeight/3)	
 								.text(function(d, i){
 										return d.data['2ndLine'];
-								});
+								})
+								.each(function(d){
+									var secondLineWidth = this.getComputedTextLength();
+									d3.select(this).attr("dx", -(firstLineWidth + secondLineWidth)/2)
+												   .attr("dy", arcWeight/3)
+												   ;
+								})
+								;
 					}
-				});
+				})
+				;
 	}
 
 	var init = function(){
