@@ -6,6 +6,7 @@ app.main = (function(){
     var height = window.innerHeight;
     var courses;
 
+	/*------------------ CATEGORIES -------------------*/
 	// Categories change from term to term. Think about how to handle arc updates
 	var loadCategories = function(){
 		d3.csv('assets/data/fall_2015_path_of_study.tsv', function(error, data) {
@@ -78,8 +79,7 @@ app.main = (function(){
 				return 'hsla(180, 50%, 50%, ' + (i / 10) +')'	
 			})
 			.on('click', function(d, i){
-				// console.log(d);
-				console.log(courses);
+				filterCoursesBy(d.data.path_of_study);
 			})
 			;
 
@@ -129,13 +129,30 @@ app.main = (function(){
 				;
 	}
 
+	/*-------------------- COURSES --------------------*/
 	var loadCourses = function(){
-		d3.csv('assets/data/fall_2015_courses.tsv', function(error, data) {
+		d3.json('assets/data/lang_courses_fall_2015.json', function(error, data) {
 			if (error) return console.warn(error);
 			console.log('loaded:');
 			console.log(data);
 			courses = data;
 		});
+	};
+
+	var displayCourses = function(obj){
+
+	};
+
+	var filterCoursesBy = function(pathOfStudy){
+		var filteredCourses = {};
+		for(var courseNumber in courses){
+			if(courses[courseNumber]['path_of_study'].indexOf(pathOfStudy) > -1){
+				// console.log(courses[courseNumber]['path_of_study']);
+				filteredCourses[courseNumber] = courses[courseNumber];
+			}
+		}
+		// console.log(filteredCourses);
+		return filteredCourses;
 	};
 
 	var init = function(){
