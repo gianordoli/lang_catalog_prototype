@@ -168,28 +168,51 @@ app.main = (function(){
 	};
 
 	var displayCourses = function(data, coords){
-
+		console.log('Called displayCourses');
 		// console.log(data);
+
+		// Layout
+		var radius = 12;
+		var linkDist = width/10;
+
+		// Data
 		var nodes = data;
-	    var root = nodes[0];
-		root.radius = 0;
-		root.fixed = true;
+		var anchor = {};
+		nodes.unshift(anchor);
 
 		// Adding a radius to our objects
 		for(var i = 0; i < nodes.length; i++){
 			nodes[i]['radius'] = 12;
 		};
-		// console.log(nodes);
+		console.log(nodes);
+
+		var links = [];
+		for(var i = 1; i < nodes.length; i++){
+			var obj = { source:0, target:i, value: 1 };
+			links.push(obj);
+		}
+		console.log(links);
 
 		var force = d3.layout.force()
 		    .gravity(0.05)
 		    .charge(function(d, i) {
-		    	return -100;
-		    	// console.log(i);
-		    	// return i ? 0 : 1000;
+		    	// Same as: if(i > 0) { 0 } else { 1000 }
+		    	// return i ? 0 : -1000;
+		    	return - 100;
+		    	// Which means:
+		    	// * the first node (anchor) will repel all other ones (-1000)
+		    	// * the others don't repel each other
 		    })
 		    .nodes(nodes)
-		    .size([width, height]);
+		    .links(links)
+		    .linkDistance(linkDist)
+		    .size([width, height])
+		    ;
+
+		nodes[0].fixed = true;
+		nodes[0].x = coords.x + width/2;
+		nodes[0].y = coords.y + height/2;
+
 		force.start();
 		
 		var coursesChart = svg.append("g")
@@ -197,36 +220,51 @@ app.main = (function(){
 			;
 	
 		var circles = coursesChart.selectAll("circle")
-			.data(nodes.slice(1))
+			.data(nodes)
 			.enter()
 			.append("circle")
-		    .attr("r", function(d, i){
-		    	return d.radius;
+		    .attr("r", radius)
+		    .attr("id", function(d, i){
+		    	return d.title;
+		    })		    
+		    .style("fill", function(d, i){
+		    	return i ? 'hsla(0, 50%, 50%, 0.5)' : 'black';
 		    })
-		    .style("fill", 'hsla(0, 50%, 50%, 0.5)')
 		    .on('click', function(d, i){
 		    	console.log(d);
 		    })
 		    ;
 
+		var link = coursesChart.selectAll(".link")
+      		.data(links)
+    		.enter()
+    		.append("line")
+      		.attr("class", "link")
+      		.style("stroke-width", function(d) { return Math.sqrt(d.value); });
+
 		force.on("tick", function(e) {
-		  var q = d3.geom.quadtree(nodes),
-		      i = 0,
-		      n = nodes.length;
+			var q = d3.geom.quadtree(nodes),
+				i = 0,
+				n = nodes.length;
 
-		  while (++i < n) q.visit(collide(nodes[i]));
+			while (++i < n) q.visit(collide(nodes[i]));
 
-		  coursesChart.selectAll("circle")
-		      .attr("cx", function(d) { return d.x; })
-		      .attr("cy", function(d) { return d.y; });
+			coursesChart.selectAll("circle")
+				.attr("cx", function(d) { return d.x; })
+				.attr("cy", function(d) { return d.y; });
+
+			link.attr("x1", function(d) { return d.source.x; })
+				.attr("y1", function(d) { return d.source.y; })
+				.attr("x2", function(d) { return d.target.x; })
+				.attr("y2", function(d) { return d.target.y; });
 		});
 
-		svg.on("mousemove", function() {
-		  var p1 = d3.mouse(this);
-		  root.px = p1[0];
-		  root.py = p1[1];
-		  force.resume();
-		});		
+		// svg.on("mousemove", function() {
+		//   var p1 = d3.mouse(this);
+		//   root.px = p1[0];
+		//   root.py = p1[1];
+		//   force.resume();
+		// });		
 
 		function collide(node) {
 		  var r = node.radius + 16,
