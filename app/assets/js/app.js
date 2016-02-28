@@ -84,15 +84,16 @@ app.main = (function(){
 			.on('click', function(d, i){
 				//
 				var filterered = filterCoursesBy(d.data.path_of_study);
-				displayCourses(filterered);
+				displayCourses(filterered, anchors);
 			})
 			// Compute coords so we can draw the network later
 			.each(function(d, i){
 				var arcPosition = this.getPointAtLength(this.getTotalLength()*0.7);
 				anchors.push({
-					title: d.data.path_of_study,
-					x: arcPosition.x,
-					y: arcPosition.y
+					path_of_study: d.data.path_of_study,
+					anchorX: arcPosition.x,
+					anchorY: arcPosition.y,
+					isAnchor: true
 				});
 			})
 			;
@@ -143,27 +144,22 @@ app.main = (function(){
 				})
 				;
 
-		// function getAnchors(arcs){
-		// 	var anchors = [];
-		// 	arcs.each(function(d, i){
-		// 		// console.log(this);
-		// 		var arcPosition = this.getPointAtLength(this.getTotalLength()*0.7);
-		// 		anchors.push({
-		// 			title: d.data.title,
-		// 			x: arcPosition.x,
-		// 			y: arcPosition.y
-		// 		});
-		// 		// // console.log(coords);
-		// 		// categoriesChart.append('circle')
-		// 		// 	.attr('cx', arcPosition.x)
-		// 		// 	.attr('cy', arcPosition.y)
-		// 		// 	.attr('r', 20)
-		// 		// 	.attr('fill', 'black')
-		// 		// ;
-		// 	})
-		// 	;
-		// 	return anchors;
-		// }
+		// Just a debug function, not really using it now
+		function drawAnchors(){
+			categoriesChart.selectAll("circle")
+				.data(anchors)
+				.enter()
+				.append('circle')
+				.attr('cx', function(d, i){
+					return d.x;
+				})
+				.attr('cy', function(d, i){
+					return d.y;
+				})
+				.attr('r', 20)
+				.attr('fill', 'black')
+			;
+		}
 	}
 
 	/*-------------------- COURSES --------------------*/
@@ -192,51 +188,54 @@ app.main = (function(){
 		return filteredCourses;
 	};
 
-	var displayCourses = function(data, coords){
+	var displayCourses = function(data, anchors){
 		console.log('Called displayCourses');
 		// console.log(data);
 
-		// Layout
+		// LAYOUT
 		var radius = 12;
 		var linkDist = width/7;
 
-		// Data
+		// DATA
 		var nodes = data;
-		var anchor = {};
-		nodes.unshift(anchor);
-
-		// Adding a radius to our objects
-		for(var i = 0; i < nodes.length; i++){
-			nodes[i]['radius'] = 12;
-		};
+		// Prepend anchors to nodes array
+		for(var i = 0; i < anchors.length; i ++){
+			nodes.unshift(anchors[i]);	
+		}
 		console.log(nodes);
 
 		var links = [];
-		for(var i = 1; i < nodes.length; i++){
+		for(var i = anchors.length; i < nodes.length; i++){
 			var obj = { source:0, target:i, value: 1 };
 			links.push(obj);
 		}
-		console.log(links);
+		// console.log(links);	
 
 		var force = d3.layout.force()
+		    .size([width, height])
 		    .gravity(0.05)
+		    .linkDistance(linkDist)	// standard link length
+		    .linkStrength(0.1)		// how flexible the links are		    
+		    .nodes(nodes)
+		    .links(links)		    
 		    .charge(function(d, i) {
+		    	// return -100;
+		    	return i < anchors.length ? -100 : -10
 		    	// Same as: if(i > 0) { 0 } else { 1000 }
-		    	return i ? 0 : -1000;
+		    	// return i ? 0 : -100;
 		    	// Which means:
 		    	// * the first node (anchor) will repel all other ones (-1000)
 		    	// * the others don't repel each other
 		    })
-		    .nodes(nodes)
-		    .links(links)
-		    .linkDistance(linkDist)	// standard link length
-		    .linkStrength(0.1)		// how flexible the links are
-		    .size([width, height])
 		    ;
 
-		nodes[0].fixed = true;
-		nodes[0].x = coords.x + width/2;
-		nodes[0].y = coords.y + height/2;
+		for(var i = 0; i < anchors.length; i++){
+			// console.log(nodes[i]);
+			nodes[i].fixed = true;
+			nodes[i].x = nodes[i].anchorX + width/2;
+			nodes[i].y = nodes[i].anchorY + height/2;
+		}
+
 
 		force.start();
 		
