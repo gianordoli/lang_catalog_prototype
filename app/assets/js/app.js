@@ -139,6 +139,10 @@ app.main = (function(){
 					}
 				})
 				;
+
+		function getAnchors(){
+
+		}
 	}
 
 	/*-------------------- COURSES --------------------*/
@@ -173,7 +177,7 @@ app.main = (function(){
 
 		// Layout
 		var radius = 12;
-		var linkDist = width/10;
+		var linkDist = width/7;
 
 		// Data
 		var nodes = data;
@@ -197,15 +201,15 @@ app.main = (function(){
 		    .gravity(0.05)
 		    .charge(function(d, i) {
 		    	// Same as: if(i > 0) { 0 } else { 1000 }
-		    	// return i ? 0 : -1000;
-		    	return - 100;
+		    	return i ? 0 : -1000;
 		    	// Which means:
 		    	// * the first node (anchor) will repel all other ones (-1000)
 		    	// * the others don't repel each other
 		    })
 		    .nodes(nodes)
 		    .links(links)
-		    .linkDistance(linkDist)
+		    .linkDistance(linkDist)	// standard link length
+		    .linkStrength(0.1)		// how flexible the links are
 		    .size([width, height])
 		    ;
 
@@ -257,14 +261,7 @@ app.main = (function(){
 				.attr("y1", function(d) { return d.source.y; })
 				.attr("x2", function(d) { return d.target.x; })
 				.attr("y2", function(d) { return d.target.y; });
-		});
-
-		// svg.on("mousemove", function() {
-		//   var p1 = d3.mouse(this);
-		//   root.px = p1[0];
-		//   root.py = p1[1];
-		//   force.resume();
-		// });		
+		});	
 
 		function collide(node) {
 		  var r = node.radius + 16,
