@@ -4,8 +4,8 @@ app.main = (function(){
 
     var width  = window.innerWidth;
     var height = window.innerHeight;
-    var svg;
-    var courses;
+    var svg;		// SVG object
+    var courses;	// Course data loaded async with subject data
 
 	/*------------------ CATEGORIES -------------------*/
 	// Categories change from term to term. Think about how to handle arc updates
@@ -39,6 +39,7 @@ app.main = (function(){
 		// VARS
 		var radius = 490/2;
 		var arcWeight = (550 - 490)/2;
+    	var anchors = [];	// Arcs coordinates; Will compute after drawing them
 
 		// FUNCTIONS
 		// D3's SVG shape helper function
@@ -72,7 +73,7 @@ app.main = (function(){
 			;
 
 		// Arcs
-	  	g.append("path")
+	  	var arcs = g.append("path")
 			.attr("d", arc)
 			.attr("id", function(d, i){
 				return 'arc_' + i;
@@ -83,17 +84,19 @@ app.main = (function(){
 			.on('click', function(d, i){
 				//
 				var filterered = filterCoursesBy(d.data.path_of_study);
-				
-				// Get anchor point
-				var coords = this.getPointAtLength(this.getTotalLength()*0.7);
-				displayCourses(filterered, coords);
-				// categoriesChart.append('circle')
-				// 	.attr('cx', coords.x)
-				// 	.attr('cy', coords.y)
-				// 	.attr('r', 20)
-				// 	.attr('fill', 'black');
+				displayCourses(filterered);
+			})
+			// Compute coords so we can draw the network later
+			.each(function(d, i){
+				var arcPosition = this.getPointAtLength(this.getTotalLength()*0.7);
+				anchors.push({
+					title: d.data.path_of_study,
+					x: arcPosition.x,
+					y: arcPosition.y
+				});
 			})
 			;
+		// console.log(anchors);
 
 		// Labels
 		// <text>
@@ -140,9 +143,27 @@ app.main = (function(){
 				})
 				;
 
-		function getAnchors(){
-
-		}
+		// function getAnchors(arcs){
+		// 	var anchors = [];
+		// 	arcs.each(function(d, i){
+		// 		// console.log(this);
+		// 		var arcPosition = this.getPointAtLength(this.getTotalLength()*0.7);
+		// 		anchors.push({
+		// 			title: d.data.title,
+		// 			x: arcPosition.x,
+		// 			y: arcPosition.y
+		// 		});
+		// 		// // console.log(coords);
+		// 		// categoriesChart.append('circle')
+		// 		// 	.attr('cx', arcPosition.x)
+		// 		// 	.attr('cy', arcPosition.y)
+		// 		// 	.attr('r', 20)
+		// 		// 	.attr('fill', 'black')
+		// 		// ;
+		// 	})
+		// 	;
+		// 	return anchors;
+		// }
 	}
 
 	/*-------------------- COURSES --------------------*/
