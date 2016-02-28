@@ -200,14 +200,16 @@ app.main = (function(){
 		var nodes = data;
 
 		// Prepending anchors to nodes array
-		for(var i = 0; i < anchors.length; i ++){
+		for(var i = anchors.length - 1; i >= 0; i --){
 			nodes.unshift(anchors[i]);	
 		}
 		// console.log(nodes);
 
 		// Adding a radius to our objects (for collision purposes)
 		for(var i = 0; i < nodes.length; i++){
-			nodes[i]['radius'] = radius;
+			// Anchors will have radius 1, so they don't
+			// prevent courses from getting inside the main donut
+			nodes[i]['radius'] = i < anchors.length ? 1 : radius;
 		}		
 
 		// Creating the links
@@ -222,8 +224,6 @@ app.main = (function(){
 					var newLink = { source:j, target:i, value: 1 };
 					links.push(newLink);
 				}
-				console.log(nodes[j]['path_of_study'].length);
-
 			}
 		}
 		// console.log(links);	
@@ -263,6 +263,13 @@ app.main = (function(){
 			.attr('id', 'courses-chart')		
 			;
 	
+		var link = coursesChart.selectAll(".link")
+      		.data(links)
+    		.enter()
+    		.append("line")
+      		.attr("class", "link")
+      		.style("stroke-width", function(d) { return Math.sqrt(d.value); });
+
 		var circles = coursesChart.selectAll("circle")
 			.data(nodes)
 			.enter()
@@ -272,19 +279,15 @@ app.main = (function(){
 		    	return d.title;
 		    })		    
 		    .style("fill", function(d, i){
-		    	return i ? 'hsla(0, 50%, 50%, 0.5)' : 'black';
+		    	// Anchors won't be visible
+		    	var opacity = i < anchors.length ? 0 : 0.8;
+		    	return 'hsla(0, 50%, 50%, ' + opacity + ')';
 		    })
 		    .on('click', function(d, i){
-		    	console.log(d);
+		    	console.log(d.path_of_study.length);
+		    	console.log(d.path_of_study);
 		    })
 		    ;
-
-		var link = coursesChart.selectAll(".link")
-      		.data(links)
-    		.enter()
-    		.append("line")
-      		.attr("class", "link")
-      		.style("stroke-width", function(d) { return Math.sqrt(d.value); });
 
 		force.on("tick", function(e) {
 			var q = d3.geom.quadtree(nodes),
