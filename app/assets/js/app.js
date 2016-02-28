@@ -198,12 +198,19 @@ app.main = (function(){
 
 		// DATA
 		var nodes = data;
-		// Prepend anchors to nodes array
+
+		// Prepending anchors to nodes array
 		for(var i = 0; i < anchors.length; i ++){
 			nodes.unshift(anchors[i]);	
 		}
-		console.log(nodes);
+		// console.log(nodes);
 
+		// Adding a radius to our objects (for collision purposes)
+		for(var i = 0; i < nodes.length; i++){
+			nodes[i]['radius'] = radius;
+		}		
+
+		// Creating the links
 		var links = [];
 		for(var i = anchors.length; i < nodes.length; i++){
 			var obj = { source:0, target:i, value: 1 };
@@ -219,16 +226,18 @@ app.main = (function(){
 		    .nodes(nodes)
 		    .links(links)		    
 		    .charge(function(d, i) {
-		    	// return -100;
-		    	return i < anchors.length ? -100 : -10
-		    	// Same as: if(i > 0) { 0 } else { 1000 }
-		    	// return i ? 0 : -100;
+		    	// Anchors will repel, course nodes won't
+		    	return i < anchors.length ? -100 : 0
+
+		    	// return i ? 0 : -100 is the same as
+		    	// if(i > 0) { 0 } else { 1000 }
 		    	// Which means:
 		    	// * the first node (anchor) will repel all other ones (-1000)
 		    	// * the others don't repel each other
 		    })
 		    ;
 
+		// Fixing our anchors
 		for(var i = 0; i < anchors.length; i++){
 			// console.log(nodes[i]);
 			nodes[i].fixed = true;
@@ -236,9 +245,10 @@ app.main = (function(){
 			nodes[i].y = nodes[i].anchorY + height/2;
 		}
 
-
+		// Initializing calculations
 		force.start();
 		
+		// Appending the actual SVG objects
 		var coursesChart = svg.append("g")
 			.attr('id', 'courses-chart')		
 			;
