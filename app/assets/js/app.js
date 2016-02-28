@@ -12,13 +12,13 @@ app.main = (function(){
 	var loadCategories = function(){
 		d3.csv('assets/data/fall_2015_path_of_study.tsv', function(error, data) {
 			if (error) return console.warn(error);
-			console.log('Loaded categories:');
-			console.log(data);
-			console.log('Checking number of lines...');
+			// console.log('Loaded categories:');
+			// console.log(data);
+			// console.log('Checking number of lines...');
 			for(var i = 0; i < data.length; i++){
 				data[i] = checkLines(data[i]);
 			}
-			console.log(data);
+			// console.log(data);
 			displayCategories(data);
 		});
 
@@ -166,8 +166,8 @@ app.main = (function(){
 	var loadCourses = function(){
 		d3.json('assets/data/lang_courses_fall_2015.json', function(error, data) {
 			if (error) return console.warn(error);
-			console.log('Loaded courses:');
-			console.log(data);
+			// console.log('Loaded courses:');
+			// console.log(data);
 			courses = data;
 		});
 	};
@@ -212,9 +212,19 @@ app.main = (function(){
 
 		// Creating the links
 		var links = [];
-		for(var i = anchors.length; i < nodes.length; i++){
-			var obj = { source:0, target:i, value: 1 };
-			links.push(obj);
+		// Loop through anchors
+		for(var i = 0; i < anchors.length; i++){
+			// Loop through nodes
+			// (skipping the anchors, which come first in the array)
+			for(var j = anchors.length; j < nodes.length; j++){
+				// Do this course and this link share a path of study?
+				if(nodes[j]['path_of_study'].indexOf(anchors[i]['path_of_study']) > -1){
+					var newLink = { source:j, target:i, value: 1 };
+					links.push(newLink);
+				}
+				console.log(nodes[j]['path_of_study'].length);
+
+			}
 		}
 		// console.log(links);	
 
@@ -225,16 +235,16 @@ app.main = (function(){
 		    .linkStrength(0.1)		// how flexible the links are		    
 		    .nodes(nodes)
 		    .links(links)		    
-		    .charge(function(d, i) {
-		    	// Anchors will repel, course nodes won't
-		    	return i < anchors.length ? -100 : 0
+		    // .charge(function(d, i) {
+		    // 	// Anchors will repel, course nodes won't
+		    // 	return i < anchors.length ? -100 : 0
 
-		    	// return i ? 0 : -100 is the same as
-		    	// if(i > 0) { 0 } else { 1000 }
-		    	// Which means:
-		    	// * the first node (anchor) will repel all other ones (-1000)
-		    	// * the others don't repel each other
-		    })
+		    // 	// return i ? 0 : -100 is the same as
+		    // 	// if(i > 0) { 0 } else { 1000 }
+		    // 	// Which means:
+		    // 	// * the first node (anchor) will repel all other ones (-1000)
+		    // 	// * the others don't repel each other
+		    // })
 		    ;
 
 		// Fixing our anchors
