@@ -60,7 +60,7 @@ app.main = (function(){
             ;
 
 		var categoriesChart = svg.append("g")
-			.attr('id', 'categories-chart')
+			.attr('id', 'path-of-study-chart')
 			.attr("transform", "translate(" + width/2 + "," + height/2 + ")")
 			;
 		
@@ -69,7 +69,7 @@ app.main = (function(){
 			.data(pie(dataset))
 			.enter()
 			.append("g")
-			.attr("class", "path-of-study")
+			.classed("path-of-study", true)
 			;
 
 		// Arcs
@@ -257,7 +257,7 @@ app.main = (function(){
 		    // })
 		    ;
 
-		// Fixing our anchors
+		// Making our anchors fixed
 		for(var i = 0; i < anchors.length; i++){
 			// console.log(nodes[i]);
 			nodes[i].fixed = true;
@@ -277,7 +277,10 @@ app.main = (function(){
       		.data(links)
     		.enter()
     		.append("line")
-      		.attr("class", "link")
+      		.classed("link", function(d, i){
+      			// Links to the selected anchor won't be visible
+      			return d.target.path_of_study != selected;
+      		})
       		.style("stroke-width", function(d) { return Math.sqrt(d.value); });
 
 		var circles = coursesChart.selectAll("circle")
@@ -287,11 +290,10 @@ app.main = (function(){
 		    .attr("r", radius)
 		    .attr("id", function(d, i){
 		    	return d.title;
-		    })		    
-		    .style("fill", function(d, i){
+		    })
+		    .attr('class', function(d, i){
 		    	// Anchors won't be visible
-		    	var opacity = i < anchors.length ? 0 : 0.8;
-		    	return 'hsla(0, 50%, 50%, ' + opacity + ')';
+				return i > anchors.length ? 'course' : 'anchor';
 		    })
 		    .on('click', function(d, i){
 		    	console.log(d.path_of_study.length);
