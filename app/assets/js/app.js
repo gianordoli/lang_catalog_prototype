@@ -79,10 +79,16 @@ app.main = (function(){
 				return 'arc_' + i;
 			})
 			.on('click', function(d, i){
+
+				// Toggle class
+				d3.select(this).classed("selected", !d3.select(this).classed("selected"));
+				
+				// Filter data
 				var filterered = filterCoursesBy(d.data.path_of_study);
+
+				// Display network
 				displayCourses(filterered, anchors, d.data.path_of_study);
-				d3.select(this)
-					.classed("selected", !d3.select(this).classed("selected"));
+				
 			})
 			// Compute coords so we can draw the network later
 			.each(function(d, i){
@@ -224,6 +230,9 @@ app.main = (function(){
 				if(nodes[j]['path_of_study'].indexOf(anchors[i]['path_of_study']) > -1){					
 					var newLink = { source:j, target:i, value: 1 };
 					links.push(newLink);
+
+					// Highlight arc color
+					d3.select('#arc_' + i).classed("linked", true);	
 				}
 			}
 		}
