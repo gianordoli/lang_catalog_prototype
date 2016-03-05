@@ -79,9 +79,10 @@ app.main = (function(){
 				return 'arc_' + i;
 			})
 			.on('click', function(d, i){
-				//
 				var filterered = filterCoursesBy(d.data.path_of_study);
 				displayCourses(filterered, anchors, d.data.path_of_study);
+				d3.select(this)
+					.classed("selected", !d3.select(this).classed("selected"));
 			})
 			// Compute coords so we can draw the network later
 			.each(function(d, i){
