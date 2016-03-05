@@ -65,11 +65,11 @@ app.main = (function(){
 			;
 		
 		// Each combo of arc and text will be inside this group
-		var g = categoriesChart.selectAll(".arc")
+		var g = categoriesChart.selectAll(".path-of-study")
 			.data(pie(dataset))
 			.enter()
 			.append("g")
-			.attr("class", "arc")
+			.attr("class", "path-of-study")
 			;
 
 		// Arcs
@@ -78,13 +78,10 @@ app.main = (function(){
 			.attr("id", function(d, i){
 				return 'arc_' + i;
 			})
-			.style("fill", function(d, i){
-				return 'hsla(180, 50%, 50%, ' + (i / 10) +')'	
-			})
 			.on('click', function(d, i){
 				//
 				var filterered = filterCoursesBy(d.data.path_of_study);
-				displayCourses(filterered, anchors);
+				displayCourses(filterered, anchors, d.data.path_of_study);
 			})
 			// Compute coords so we can draw the network later
 			.each(function(d, i){
@@ -118,9 +115,9 @@ app.main = (function(){
 					})
 					.attr("dy", function(d, i){
 						if(!d.data.hasOwnProperty('2ndLine')){
-							return arcWeight/2;
+							return - arcWeight + arcWeight/2;
 						}else{
-							return arcWeight/3;
+							return - arcWeight + arcWeight/3;
 						}
 					})
 				// <tspan> 2ndLine
@@ -188,9 +185,12 @@ app.main = (function(){
 		return filteredCourses;
 	};
 
-	var displayCourses = function(data, anchors){
+	// (list of courses, position of arcs, selected pathOfStudy)
+	var displayCourses = function(data, anchors, selected){
 		console.log('Called displayCourses');
 		// console.log(data);
+		// console.log(anchors);
+		// console.log(selected);
 
 		// LAYOUT
 		var radius = 12;
@@ -212,15 +212,15 @@ app.main = (function(){
 			nodes[i]['radius'] = i < anchors.length ? 1 : radius;
 		}		
 
-		// Creating the links
+		// CREATING THE LINKS
 		var links = [];
 		// Loop through anchors
 		for(var i = 0; i < anchors.length; i++){
 			// Loop through nodes
-			// (skipping the anchors, which come first in the array)
+			// (skip the anchors, which come first in the array)
 			for(var j = anchors.length; j < nodes.length; j++){
-				// Do this course and this link share a path of study?
-				if(nodes[j]['path_of_study'].indexOf(anchors[i]['path_of_study']) > -1){
+				// Do this course (node) and this arc (anchor) share a path of study?
+				if(nodes[j]['path_of_study'].indexOf(anchors[i]['path_of_study']) > -1){					
 					var newLink = { source:j, target:i, value: 1 };
 					links.push(newLink);
 				}

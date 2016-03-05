@@ -1,5 +1,10 @@
 ## To-do
 
-Categories change from term to term. Think about how to handle arc updates
+* Erase previously drawn chart
+* Check categories not loading
+* Tooltip
 
-Make diameter relative to width and height
+
+
+* Categories change from term to term. Think about how to handle arc updates
+* Make diameter relative to width and height
