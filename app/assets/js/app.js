@@ -345,10 +345,10 @@ app.main = (function(){
 			
 			console.log('myGraph.update()');
 
-			var link = coursesChart.selectAll("line")
+			var linkSelection = coursesChart.selectAll('line')
 	      		.data(links);
 
-	      	var linkEnter = link.enter()
+	      	var linkEnter = linkSelection.enter()
 	    		.append("line")
 	      		.classed("link", function(d, i){
 	      			// Links to the selected anchor won't be visible
@@ -357,14 +357,14 @@ app.main = (function(){
 	      		.style("stroke-width", function(d) { return Math.sqrt(d.value); })
 	      		;
 
-	      	link.exit()
+	      	linkSelection.exit()
 	      		.remove()
 	      		;
 
-			var node = coursesChart.selectAll("circle")
+			var nodeSelection = coursesChart.selectAll("circle")
 				.data(nodes);
 
-			var nodeEnter = node.enter()
+			var nodeEnter = nodeSelection.enter()
 				.append("circle")
 			    .attr("r", radius)
 			    .attr("id", function(d, i){
@@ -381,7 +381,7 @@ app.main = (function(){
 			    })
 			    ;
 
-			node.exit()
+			nodeSelection.exit()
 				.remove()
 				;
 
@@ -392,14 +392,10 @@ app.main = (function(){
 
 				while (++i < n) q.visit(collide(nodes[i]));
 
-                node.attr("cx", function(d) { return d.x; })
+                nodeSelection.attr("cx", function(d) { return d.x; })
 					.attr("cy", function(d) { return d.y; });
 
-				// coursesChart.selectAll("circle")
-				// 	.attr("cx", function(d) { return d.x; })
-				// 	.attr("cy", function(d) { return d.y; });
-
-				link.attr("x1", function(d) { return d.source.x; })
+				linkSelection.attr("x1", function(d) { return d.source.x; })
 					.attr("y1", function(d) { return d.source.y; })
 					.attr("x2", function(d) { return d.target.x; })
 					.attr("y2", function(d) { return d.target.y; });
@@ -458,20 +454,24 @@ app.main = (function(){
 		console.log('drawGraph()');
 
 		graph = new myGraph();
-		var source = '[{"title":"Rvolution & Pop Media in Hist","path_of_study":["Global Studies"],"course_number":"910"},{"title":"Documentary Self","path_of_study":["The Arts","Culture & Media","Economics","Literary Studies","Journalism + Design","Religious Studies","Screen Studies"],"course_number":"920"},{"title":"The Spiritual Autobiography","path_of_study":["Global Studies","Anthropology","Contemporary Music","Journalism + Design","Psychology","Education Studies","The Arts","Liberal Arts","Literary Studies","Culture & Media","Economics","History","Sociology","Theater","Religious Studies","Interdisciplinary Science","Philosophy","Social Inquiry","Politics"],"course_number":"1000"},{"title":"Reading Poetry","path_of_study":["The Arts","Interdisciplinary Science"],"course_number":"1002"},{"title":"Fantastic Short Fiction","path_of_study":["Economics"],"course_number":"1003"},{"title":"Self and Social Structure","path_of_study":["Liberal Arts"],"course_number":"1008"},{"title":"Fundamentals of Western Music","path_of_study":["Contemporary Music","Screen Studies"],"course_number":"1010"}]';
-		var sourceData = JSON.parse(source);
-		console.log(sourceData);
-		var i = 0;
-		var test = setInterval(function(){
-			console.log('add node');
-			if(i < 3){
-			// if(i < sourceData.length){
-				graph.addNode(sourceData[i]);
-				i++;
-			}else{
-				clearInterval(test);
-			}
-		}, 2000);
+
+		// Debugging, not really using this now
+		function debugLinks(){
+			var source = '[{"title":"Rvolution & Pop Media in Hist","path_of_study":["Global Studies"],"course_number":"910"},{"title":"Documentary Self","path_of_study":["The Arts","Culture & Media","Economics","Literary Studies","Journalism + Design","Religious Studies","Screen Studies"],"course_number":"920"},{"title":"The Spiritual Autobiography","path_of_study":["Global Studies","Anthropology","Contemporary Music","Journalism + Design","Psychology","Education Studies","The Arts","Liberal Arts","Literary Studies","Culture & Media","Economics","History","Sociology","Theater","Religious Studies","Interdisciplinary Science","Philosophy","Social Inquiry","Politics"],"course_number":"1000"},{"title":"Reading Poetry","path_of_study":["The Arts","Interdisciplinary Science"],"course_number":"1002"},{"title":"Fantastic Short Fiction","path_of_study":["Economics"],"course_number":"1003"},{"title":"Self and Social Structure","path_of_study":["Liberal Arts"],"course_number":"1008"},{"title":"Fundamentals of Western Music","path_of_study":["Contemporary Music","Screen Studies"],"course_number":"1010"}]';
+			var sourceData = JSON.parse(source);
+			console.log(sourceData);
+			var i = 0;
+			var test = setInterval(function(){
+				// if(i < 3){
+				if(i < sourceData.length){
+					console.log('add node');
+					graph.addNode(sourceData[i]);
+					i++;
+				}else{
+					clearInterval(test);
+				}
+			}, 4000);
+		}
 	};
 
 	function updateGraph(data){
