@@ -489,8 +489,8 @@ app.main = (function(){
 			}
 			return nMatches === selected.length && selected.length > 0;
 		});
-		console.log('newFilter: ' + newFilter.length);
-		console.log(newFilter);
+		// console.log('newFilter: ' + newFilter.length);
+		// console.log(newFilter);
 		// console.log('prevFilter: ' + prevFilter.length);
 		// console.log(prevFilter);
 
