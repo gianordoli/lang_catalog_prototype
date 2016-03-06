@@ -258,23 +258,26 @@ app.main = (function(){
         newGraph.addNode = function(obj) {
         	obj = addNodeId(obj);		// Anchor id: path_of_study; Course id: course_number
         	obj = addNodeRadius(obj);
-            nodes.push(obj);
 
-        	if (obj.isAnchor) {			// We need to make anchors fixed
-        		obj = fixAnchor(obj)
-        	}else{						// And add links to courses
-				addLinks(obj);
-				console.log(links);
+        	// Before really updating the graph, let's check if this add haven't been yet added
+        	if(findNodeIndex(obj.id) === undefined){
+	            nodes.push(obj);
+
+	        	if (obj.isAnchor) {			// We need to make anchors fixed
+	        		obj = fixAnchor(obj)
+	        	}else{						// And add links to courses
+					addLinks(obj);
+					// console.log(links);
+	        	}
+
+	            update();
         	}
-
-            update();
         };
 
         newGraph.removeNode = function(id){
             var i = 0;
             var nodeIndex = findNodeIndex(id);
             // Remove links; gotta use a while, because the size of the array will change
-            console.log(links);
             while (i < links.length) {
                 if ((links[i]['source']['index'] === nodeIndex) || (links[i]['target']['index'] === nodeIndex)) {
                     links.splice(i, 1);
@@ -325,7 +328,7 @@ app.main = (function(){
 						
 						var sourceIndex = findNodeIndex(obj['course_number']);
 						var targetIndex = findNodeIndex(anchors[i]['path_of_study']);
-						console.log(sourceIndex);
+						// console.log(sourceIndex);
 						var newLink = { source: sourceIndex,
 										target: targetIndex,
 										value: 1 };
@@ -453,7 +456,7 @@ app.main = (function(){
 
 		graph = new myGraph();
 
-		debugLinks();
+		// debugLinks();
 
 		// Debugging, not really using this now
 		function debugLinks(){
