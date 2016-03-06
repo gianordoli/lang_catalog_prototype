@@ -6,11 +6,12 @@ app.main = (function(){
     var height = window.innerHeight;
     var svg;		// SVG object
     var courses;	// Course data loaded async with subject data
-    var filteredCourses; // Will keep track of user selections
     
-    var selected = [];	 // Paths of study selected by user
-    var anchors = [];	 // Arc coordinates; used as 'anchors' on the network graph;
-    					 // Will compute after drawing them.
+    var prevFilter	= [];	// Will keep track of user selections
+    
+    var selected	= [];	// Paths of study selected by user
+    var anchors		= [];	// Arc coordinates; used as 'anchors' on the network graph;
+    					 	// Will compute after drawing them.
 
 	var graph;	// Network graph with courses;
 
@@ -104,9 +105,14 @@ app.main = (function(){
 
 				// Toggle class
 				d3.select(this).classed("selected", !d3.select(this).classed("selected"));
-				selected.push(d.data.path_of_study);
-				// Test
-				selected.push('Economics');
+
+				// Add/remove from selected list
+				var n = selected.indexOf(d.data.path_of_study);
+				if(n < 0){
+					selected.push(d.data.path_of_study);	
+				}else{
+					selected.splice(n, 1);
+				}
 				updateGraph();
 			})
 			;
@@ -206,7 +212,6 @@ app.main = (function(){
 			// console.log('Loaded courses:');
 			// console.log(data);
 			courses = data;			// Won't change unless navigating to a different term
-			filteredCourses = data; // Stores user's current selection
 		});
 	};
 
@@ -367,9 +372,9 @@ app.main = (function(){
 			    	return d.title;
 			    })
 			    .attr('class', function(d, i){
-			    	return 'course';
+			    	// return 'course';
 			    	// Anchors won't be visible
-					// return i > anchors.length ? 'course' : 'anchor';
+					return d.isAnchor ? 'anchor' : 'course';
 			    })
 			    .on('click', function(d, i){
 			    	console.log(d.path_of_study.length);
@@ -474,22 +479,39 @@ app.main = (function(){
 	};
 
 	function updateGraph(){
-
-		// Filter data
-		filteredCourses = _.filter(courses, function(o) {
+		
+		var newFilter = _.filter(courses, function(o) {
 			var nMatches = 0;
 			for(var i = 0; i < selected.length; i++){
 				if(o.path_of_study.indexOf(selected[i]) > -1){
 					nMatches ++;
 				}
 			}
-			return nMatches === selected.length;
+			return nMatches === selected.length && selected.length > 0;
 		});
+		console.log('newFilter: ' + newFilter.length);
+		console.log(newFilter);
+		// console.log('prevFilter: ' + prevFilter.length);
+		// console.log(prevFilter);
+
+		// Remove nodes
+		if(prevFilter.length > newFilter.length){
+			var diff = _.differenceBy(prevFilter, newFilter, 'course_number');
+			if(diff.length > 0){
+				for(var i = 0; i < diff.length; i++){
+					graph.removeNode(diff[i]['id']);
+				}
+			}
+		}
 
 		// Add nodes
-		for(var i = 0; i < filteredCourses.length; i++){
-			graph.addNode(filteredCourses[i]);
+		else{	
+			for(var i = 0; i < newFilter.length; i++){
+				graph.addNode(newFilter[i]);
+			}
 		}
+
+		prevFilter = newFilter;
 	}
 
 	var init = function(){
@@ -499,7 +521,9 @@ app.main = (function(){
 	};
 
 	return {
-		init: init
+		init: init,
+		selected: selected,
+		updateGraph: updateGraph
 	};
 })();
 
