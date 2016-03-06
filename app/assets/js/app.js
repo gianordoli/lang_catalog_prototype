@@ -7,6 +7,8 @@ app.main = (function(){
     var svg;		// SVG object
     var courses;	// Course data loaded async with subject data
     var filteredCourses; // Will keep track of user selections
+    var anchors = [];	 // Arc coordinates; used as 'anchors' on the network graph;
+    					 // Will compute after drawing them.
 
 	/*------------------ CATEGORIES -------------------*/
 	// Categories change from term to term. Think about how to handle arc updates
@@ -56,7 +58,6 @@ app.main = (function(){
 		// VARS
 		var radius = 490/2;
 		var arcWeight = (550 - 490)/2;
-    	var anchors = [];	// Arcs coordinates; Will compute after drawing them
 
 		// FUNCTIONS
 		// D3's SVG shape helper function
@@ -76,13 +77,13 @@ app.main = (function(){
             .attr("height", window.innerHeight)
             ;
 
-		var categoriesChart = svg.append("g")
+		var pathOfStudyChart = svg.append("g")
 			.attr('id', 'path-of-study-chart')
 			.attr("transform", "translate(" + width/2 + "," + height/2 + ")")
 			;
 		
 		// Each combo of arc and text will be inside this group
-		var g = categoriesChart.selectAll(".path-of-study")
+		var g = pathOfStudyChart.selectAll(".path-of-study")
 			.data(pie(dataset))
 			.enter()
 			.append("g")
@@ -105,22 +106,11 @@ app.main = (function(){
 					return o.path_of_study.indexOf(d.data.path_of_study) > -1;
 				});
 
-				// Display network
-				displayCourses(anchors, d.data.path_of_study);
+				// // Display network
+				// displayCourses(anchors, d.data.path_of_study);
 				
 			})
-			// Compute coords so we can draw the network later
-			.each(function(d, i){
-				var arcPosition = this.getPointAtLength(this.getTotalLength()*0.7);
-				anchors.push({
-					path_of_study: d.data.path_of_study,
-					anchorX: arcPosition.x,
-					anchorY: arcPosition.y,
-					isAnchor: true
-				});
-			})
 			;
-		// console.log(anchors);
 
 		// Labels
 		// <text>
@@ -167,22 +157,47 @@ app.main = (function(){
 				})
 				;
 
+		function getAnchors(_arcs){
+
+			console.log('getAnchors()');
+
+			// Compute coords so we can draw the network later
+			_arcs.each(function(d, i){
+				var arcPosition = this.getPointAtLength(this.getTotalLength()*0.7);
+				anchors.push({
+					path_of_study: d.data.path_of_study,
+					anchorX: arcPosition.x,
+					anchorY: arcPosition.y,
+					isAnchor: true
+				});
+			})
+			;
+			// console.log(anchors);
+		}		
+
 		// Just a debug function, not really using it now
 		function drawAnchors(){
-			categoriesChart.selectAll("circle")
+
+			console.log('drawAnchors()');
+
+			pathOfStudyChart.selectAll("circle")
 				.data(anchors)
 				.enter()
 				.append('circle')
 				.attr('cx', function(d, i){
-					return d.x;
+					console.log(d);
+					return d.anchorX;
 				})
 				.attr('cy', function(d, i){
-					return d.y;
+					return d.anchorY;
 				})
 				.attr('r', 20)
 				.attr('fill', 'black')
 			;
 		}
+
+		getAnchors(arcs);
+		drawGraph();
 	}
 
 	/*-------------------- COURSES --------------------*/
@@ -197,8 +212,9 @@ app.main = (function(){
 	};
 
 	// (list of courses, position of arcs, selected pathOfStudy)
-	var displayCourses = function(anchors, selected){
-		console.log('Called displayCourses');
+	function myGraph(){
+		
+		console.log('myGraph()');
 		// console.log(data);
 		// console.log(anchors);
 		// console.log(selected);
@@ -208,44 +224,18 @@ app.main = (function(){
 		var force;				// D3 force-directed layout
 		var coursesChart;		// SVG object
 
-		function setup(){
+		this.setup = function(){
+
+			console.log('myGraph.setup()');
 			
 			radius = 12;
 			linkDist = width/7;
 
-			nodes = filteredCourses;
-
-			// Prepending anchors to nodes array
-			for(var i = anchors.length - 1; i >= 0; i --){
-				nodes.unshift(anchors[i]);	
-			}
-			// console.log(nodes);
-
-			// Adding a radius to our objects (for collision purposes)
-			for(var i = 0; i < nodes.length; i++){
-				// Anchors will have radius 1, so they don't
-				// prevent courses from getting inside the main donut
-				nodes[i]['radius'] = i < anchors.length ? 1 : radius;
-			}					
-
-			// CREATING THE LINKS
+			nodes = anchors;
 			links = [];
-			// Loop through anchors
-			for(var i = 0; i < anchors.length; i++){
-				// Loop through nodes
-				// (skip the anchors, which come first in the array)
-				for(var j = anchors.length; j < nodes.length; j++){
-					// Do this course (node) and this arc (anchor) share a path of study?
-					if(nodes[j]['path_of_study'].indexOf(anchors[i]['path_of_study']) > -1){					
-						var newLink = { source:j, target:i, value: 1 };
-						links.push(newLink);
 
-						// Highlight arc color
-						d3.select('#arc_' + i).classed("linked", true);	
-					}
-				}
-			}
-			// console.log(links);			
+			this.updateNodes();
+			this.updateLinks();
 
 			force = d3.layout.force()
 			    .size([width, height])
@@ -264,15 +254,9 @@ app.main = (function(){
 			    // 	// * the first node (anchor) will repel all other ones (-1000)
 			    // 	// * the others don't repel each other
 			    // })
-			    ;			
+			    ;
 
-			// Making our anchors fixed
-			for(var i = 0; i < anchors.length; i++){
-				// console.log(nodes[i]);
-				nodes[i].fixed = true;
-				nodes[i].x = nodes[i].anchorX + width/2;
-				nodes[i].y = nodes[i].anchorY + height/2;
-			}
+			this.fixAnchors();
 
 			// Appending the actual SVG objects
 			coursesChart = svg.append("g")
@@ -280,7 +264,49 @@ app.main = (function(){
 				;			
 		}
 
-		function update(){
+		this.fixAnchors = function(){
+			// Making our anchors fixed
+			for(var i = 0; i < anchors.length; i++){
+				// console.log(nodes[i]);
+				nodes[i].fixed = true;
+				nodes[i].x = nodes[i].anchorX + width/2;
+				nodes[i].y = nodes[i].anchorY + height/2;
+				// console.log(nodes[i]);
+			}
+		}
+
+		this.updateNodes = function(){
+			// Adding a radius to our objects (for collision purposes)
+			for(var i = 0; i < nodes.length; i++){
+				// Anchors will have radius 1, so they don't
+				// prevent courses from getting inside the main donut
+				nodes[i]['radius'] = i < anchors.length ? 1 : radius;
+			}
+		}
+
+		this.updateLinks = function(){
+			// CREATING THE LINKS
+			// Loop through anchors
+			for(var i = 0; i < anchors.length; i++){
+				// Loop through nodes
+				// (skip the anchors, which come first in the array)
+				for(var j = anchors.length; j < nodes.length; j++){
+					// Do this course (node) and this arc (anchor) share a path of study?
+					if(nodes[j]['path_of_study'].indexOf(anchors[i]['path_of_study']) > -1){					
+						var newLink = { source:j, target:i, value: 1 };
+						links.push(newLink);
+
+						// Highlight arc color
+						d3.select('#arc_' + i).classed("linked", true);	
+					}
+				}
+			}
+			// console.log(links);				
+		}		
+
+		this.update = function(selected){
+			
+			console.log('myGraph.update()');
 
 			var link = coursesChart.selectAll(".link")
 	      		.data(links)
@@ -301,8 +327,9 @@ app.main = (function(){
 			    	return d.title;
 			    })
 			    .attr('class', function(d, i){
+			    	return 'course';
 			    	// Anchors won't be visible
-					return i > anchors.length ? 'course' : 'anchor';
+					// return i > anchors.length ? 'course' : 'anchor';
 			    })
 			    .on('click', function(d, i){
 			    	console.log(d.path_of_study.length);
@@ -325,10 +352,10 @@ app.main = (function(){
 					.attr("y1", function(d) { return d.source.y; })
 					.attr("x2", function(d) { return d.target.x; })
 					.attr("y2", function(d) { return d.target.y; });
-			});				    
+			});
 
-			// Initializing calculations
 			force.start();
+
 		}
 
 		function collide(node) {
@@ -355,9 +382,16 @@ app.main = (function(){
 		  };
 		}
 
-		setup();
-		update();
+		this.setup();
+		this.update();
 	};	
+
+	function drawGraph(){
+
+		console.log('drawGraph()');
+		
+		var graph = new myGraph();
+	};
 
 	var init = function(){
 		console.log('Called init');
