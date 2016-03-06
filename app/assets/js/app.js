@@ -9,17 +9,32 @@ app.main = (function(){
 
 	/*------------------ CATEGORIES -------------------*/
 	// Categories change from term to term. Think about how to handle arc updates
-	var loadCategories = function(){
-		d3.csv('assets/data/fall_2015_path_of_study.tsv', function(error, data) {
+	var loadPathsOfStudy = function(){
+		// d3.csv('assets/data/fall_2015_path_of_study.tsv', function(error, data) {
+		d3.json('assets/data/lang_paths_of_study_fall_2015.json', function(error, data) {			
 			if (error) return console.warn(error);
 			// console.log('Loaded categories:');
 			// console.log(data);
-			// console.log('Checking number of lines...');
+
+			// 1. Converting to object
+			var objData = [];
 			for(var i = 0; i < data.length; i++){
-				data[i] = checkLines(data[i]);
+				objData.push({
+					path_of_study: data[i]
+				})
+			}
+
+			// 2. Sorting alphabetically
+			objData.sort(function(a, b){
+			   return d3.ascending(a.path_of_study, b.path_of_study);
+			});			
+			
+			// 3. Checking number of lines
+			for(var i = 0; i < objData.length; i++){
+				objData[i] = checkLines(objData[i]);
 			}
 			// console.log(data);
-			displayCategories(data);
+			displayCategories(objData);
 		});
 
 		var checkLines = function(_obj){
@@ -345,7 +360,7 @@ app.main = (function(){
 
 	var init = function(){
 		console.log('Called init');
-		loadCategories();
+		loadPathsOfStudy();
 		loadCourses();
 	};
 
