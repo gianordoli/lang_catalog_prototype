@@ -7,6 +7,8 @@ app.main = (function(){
     var svg;		// SVG object
     var courses;	// Course data loaded async with subject data
     var filteredCourses; // Will keep track of user selections
+    
+    var selected = [];	 // Paths of study selected by user
     var anchors = [];	 // Arc coordinates; used as 'anchors' on the network graph;
     					 // Will compute after drawing them.
 
@@ -102,16 +104,10 @@ app.main = (function(){
 
 				// Toggle class
 				d3.select(this).classed("selected", !d3.select(this).classed("selected"));
-				
-				// Filter data
-				filteredCourses = _.filter(courses, function(o) {
-					return o.path_of_study.indexOf(d.data.path_of_study) > -1;
-				});
-
-				updateGraph(filteredCourses);
-				// // Display network
-				// displayCourses(anchors, d.data.path_of_study);
-				
+				selected.push(d.data.path_of_study);
+				// Test
+				selected.push('Economics');
+				updateGraph();
 			})
 			;
 
@@ -378,7 +374,7 @@ app.main = (function(){
 			    .on('click', function(d, i){
 			    	console.log(d.path_of_study.length);
 			    	console.log(d.path_of_study);
-			    	newGraph.removeNode(d.id);
+			    	// newGraph.removeNode(d.id);
 			    })
 			    ;
 
@@ -477,9 +473,22 @@ app.main = (function(){
 		}
 	};
 
-	function updateGraph(data){
-		for(var i = 0; i < data.length; i++){
-			graph.addNode(data[i]);
+	function updateGraph(){
+
+		// Filter data
+		filteredCourses = _.filter(courses, function(o) {
+			var nMatches = 0;
+			for(var i = 0; i < selected.length; i++){
+				if(o.path_of_study.indexOf(selected[i]) > -1){
+					nMatches ++;
+				}
+			}
+			return nMatches === selected.length;
+		});
+
+		// Add nodes
+		for(var i = 0; i < filteredCourses.length; i++){
+			graph.addNode(filteredCourses[i]);
 		}
 	}
 
