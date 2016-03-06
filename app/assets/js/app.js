@@ -10,6 +10,8 @@ app.main = (function(){
     var anchors = [];	 // Arc coordinates; used as 'anchors' on the network graph;
     					 // Will compute after drawing them.
 
+	var graph;	// Network graph with courses;
+
 	/*------------------ CATEGORIES -------------------*/
 	// Categories change from term to term. Think about how to handle arc updates
 	var loadPathsOfStudy = function(){
@@ -106,6 +108,7 @@ app.main = (function(){
 					return o.path_of_study.indexOf(d.data.path_of_study) > -1;
 				});
 
+				updateGraph(filteredCourses);
 				// // Display network
 				// displayCourses(anchors, d.data.path_of_study);
 				
@@ -246,23 +249,29 @@ app.main = (function(){
 			for(var i = 0; i < anchors.length; i++){
 				newGraph.addNode(anchors[i]);
 			}
-
-			newGraph.updateLinks();
+			// newGraph.updateLinks();
 
 			update();
 		}
 
         newGraph.addNode = function(obj) {
-        	obj = addNodeId(obj);
+        	obj = addNodeId(obj);		// Anchor id: path_of_study; Course id: course_number
         	obj = addNodeRadius(obj);
-        	if (obj.isAnchor) { obj = fixAnchor(obj) };
-            nodes.push(obj);    
+            nodes.push(obj);
+
+        	if (obj.isAnchor) {			// We need to make anchors fixed
+        		obj = fixAnchor(obj)
+        	}else{						// And add links to courses
+				addLinks(obj);
+				console.log(links);
+        	}
+
             update();
         };
 
         var addNodeId = function(_obj){
         	var obj = _obj;
-        	obj.id = obj.isAnchor ? 'anchor_' + obj.path_of_study : 'course_' + obj.course_number;
+        	obj.id = obj.isAnchor ? obj.path_of_study : obj.course_number;
         	return obj;
         };
 
@@ -270,7 +279,7 @@ app.main = (function(){
 			var obj = _obj;
 			obj['radius'] = obj.isAnchor ? 1 : radius;
 			return obj;
-		};        
+		};
 
 		var fixAnchor = function(_obj){
 			var obj = _obj;
@@ -281,6 +290,36 @@ app.main = (function(){
 			// console.log(nodes[i]);
 			return obj;
 		};
+
+        var findNodeIndex = function (id) {
+            for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].id === id) {
+                    return i;
+                }
+            }
+        };
+
+		var addLinks = function(obj){
+			if(!obj.isAnchor){
+				// Loop through anchors
+				for(var i = 0; i < anchors.length; i++){
+					
+					if(obj['path_of_study'].indexOf(anchors[i]['path_of_study']) > -1){
+						
+						var sourceIndex = findNodeIndex(obj['course_number']);
+						var targetIndex = findNodeIndex(anchors[i]['path_of_study']);
+						console.log(sourceIndex);
+						var newLink = { source: sourceIndex,
+										target: targetIndex,
+										value: 1 };
+						links.push(newLink);
+
+						// Highlight arc color
+						d3.select('#arc_' + targetIndex).classed("linked", true);
+					}					
+				}
+			}
+		}
 
 		newGraph.updateLinks = function(){
 			// CREATING THE LINKS
@@ -306,19 +345,26 @@ app.main = (function(){
 			
 			console.log('myGraph.update()');
 
-			var link = coursesChart.selectAll(".link")
-	      		.data(links)
-	    		.enter()
+			var link = coursesChart.selectAll("line")
+	      		.data(links);
+
+	      	var linkEnter = link.enter()
 	    		.append("line")
 	      		.classed("link", function(d, i){
 	      			// Links to the selected anchor won't be visible
 	      			return d.target.path_of_study != selected;
 	      		})
-	      		.style("stroke-width", function(d) { return Math.sqrt(d.value); });
+	      		.style("stroke-width", function(d) { return Math.sqrt(d.value); })
+	      		;
 
-			var circles = coursesChart.selectAll("circle")
-				.data(nodes)
-				.enter()
+	      	link.exit()
+	      		.remove()
+	      		;
+
+			var node = coursesChart.selectAll("circle")
+				.data(nodes);
+
+			var nodeEnter = node.enter()
 				.append("circle")
 			    .attr("r", radius)
 			    .attr("id", function(d, i){
@@ -335,6 +381,10 @@ app.main = (function(){
 			    })
 			    ;
 
+			node.exit()
+				.remove()
+				;
+
 			force.on("tick", function(e) {
 				var q = d3.geom.quadtree(nodes),
 					i = 0,
@@ -342,9 +392,12 @@ app.main = (function(){
 
 				while (++i < n) q.visit(collide(nodes[i]));
 
-				coursesChart.selectAll("circle")
-					.attr("cx", function(d) { return d.x; })
+                node.attr("cx", function(d) { return d.x; })
 					.attr("cy", function(d) { return d.y; });
+
+				// coursesChart.selectAll("circle")
+				// 	.attr("cx", function(d) { return d.x; })
+				// 	.attr("cy", function(d) { return d.y; });
 
 				link.attr("x1", function(d) { return d.source.x; })
 					.attr("y1", function(d) { return d.source.y; })
@@ -369,7 +422,6 @@ app.main = (function(){
 			    ;
 
 			force.start();
-			console.log(nodes);
 		}
 
 		function collide(node) {
@@ -405,12 +457,28 @@ app.main = (function(){
 
 		console.log('drawGraph()');
 
-		var graph = new myGraph();
-		// setInterval(function(){
-		// 	console.log('add node');
-		// 	graph.addNode({path_of_study: Math.round(Math.random()*1000)});
-		// }, 500);
+		graph = new myGraph();
+		var source = '[{"title":"Rvolution & Pop Media in Hist","path_of_study":["Global Studies"],"course_number":"910"},{"title":"Documentary Self","path_of_study":["The Arts","Culture & Media","Economics","Literary Studies","Journalism + Design","Religious Studies","Screen Studies"],"course_number":"920"},{"title":"The Spiritual Autobiography","path_of_study":["Global Studies","Anthropology","Contemporary Music","Journalism + Design","Psychology","Education Studies","The Arts","Liberal Arts","Literary Studies","Culture & Media","Economics","History","Sociology","Theater","Religious Studies","Interdisciplinary Science","Philosophy","Social Inquiry","Politics"],"course_number":"1000"},{"title":"Reading Poetry","path_of_study":["The Arts","Interdisciplinary Science"],"course_number":"1002"},{"title":"Fantastic Short Fiction","path_of_study":["Economics"],"course_number":"1003"},{"title":"Self and Social Structure","path_of_study":["Liberal Arts"],"course_number":"1008"},{"title":"Fundamentals of Western Music","path_of_study":["Contemporary Music","Screen Studies"],"course_number":"1010"}]';
+		var sourceData = JSON.parse(source);
+		console.log(sourceData);
+		var i = 0;
+		var test = setInterval(function(){
+			console.log('add node');
+			if(i < 3){
+			// if(i < sourceData.length){
+				graph.addNode(sourceData[i]);
+				i++;
+			}else{
+				clearInterval(test);
+			}
+		}, 2000);
 	};
+
+	function updateGraph(data){
+		for(var i = 0; i < data.length; i++){
+			graph.addNode(data[i]);
+		}
+	}
 
 	var init = function(){
 		console.log('Called init');
