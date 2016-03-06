@@ -244,20 +244,18 @@ app.main = (function(){
 
 			// Adding anchors to nodes
 			for(var i = 0; i < anchors.length; i++){
-				console.log(i);
 				newGraph.addNode(anchors[i]);
 			}
 
 			newGraph.updateLinks();
 
 			update();
-			console.log(nodes);
 		}
 
         newGraph.addNode = function(obj) {
         	obj = addNodeId(obj);
         	obj = addNodeRadius(obj);
-        	obj = fixAnchor(obj);
+        	if (obj.isAnchor) { obj = fixAnchor(obj) };
             nodes.push(obj);    
             update();
         };
@@ -276,13 +274,11 @@ app.main = (function(){
 
 		var fixAnchor = function(_obj){
 			var obj = _obj;
-			if(obj.isAnchor){
-				// console.log(nodes[i]);
-				obj.fixed = true;
-				obj.x = obj.anchorX + width/2;
-				obj.y = obj.anchorY + height/2;
-				// console.log(nodes[i]);
-			}
+			// console.log(nodes[i]);
+			obj.fixed = true;
+			obj.x = obj.anchorX + width/2;
+			obj.y = obj.anchorY + height/2;
+			// console.log(nodes[i]);
 			return obj;
 		};
 
@@ -373,7 +369,7 @@ app.main = (function(){
 			    ;
 
 			force.start();
-
+			console.log(nodes);
 		}
 
 		function collide(node) {
@@ -410,9 +406,9 @@ app.main = (function(){
 		console.log('drawGraph()');
 
 		var graph = new myGraph();
-		// setTimeout(function(){
+		// setInterval(function(){
 		// 	console.log('add node');
-		// 	graph.addNode('gabriel');
+		// 	graph.addNode({path_of_study: Math.round(Math.random()*1000)});
 		// }, 500);
 	};
 
