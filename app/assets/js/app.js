@@ -190,7 +190,7 @@ app.main = (function(){
 		d3.json('assets/data/lang_courses_fall_2015.json', function(error, data) {
 			if (error) return console.warn(error);
 			// console.log('Loaded courses:');
-			console.log(data);
+			// console.log(data);
 			courses = data;			// Won't change unless navigating to a different term
 			filteredCourses = data; // Stores user's current selection
 		});
@@ -203,124 +203,133 @@ app.main = (function(){
 		// console.log(anchors);
 		// console.log(selected);
 
-		// LAYOUT
-		var radius = 12;
-		var linkDist = width/7;
+		var radius, linkDist;	// LAYOUT
+		var nodes, links;		// DATA
+		var force;				// D3 force-directed layout
+		var coursesChart;		// SVG object
 
-		// DATA
-		var nodes = filteredCourses;
+		function setup(){
+			
+			radius = 12;
+			linkDist = width/7;
 
-		// Prepending anchors to nodes array
-		for(var i = anchors.length - 1; i >= 0; i --){
-			nodes.unshift(anchors[i]);	
-		}
-		// console.log(nodes);
+			nodes = filteredCourses;
 
-		// Adding a radius to our objects (for collision purposes)
-		for(var i = 0; i < nodes.length; i++){
-			// Anchors will have radius 1, so they don't
-			// prevent courses from getting inside the main donut
-			nodes[i]['radius'] = i < anchors.length ? 1 : radius;
-		}		
+			// Prepending anchors to nodes array
+			for(var i = anchors.length - 1; i >= 0; i --){
+				nodes.unshift(anchors[i]);	
+			}
+			// console.log(nodes);
 
-		// CREATING THE LINKS
-		var links = [];
-		// Loop through anchors
-		for(var i = 0; i < anchors.length; i++){
-			// Loop through nodes
-			// (skip the anchors, which come first in the array)
-			for(var j = anchors.length; j < nodes.length; j++){
-				// Do this course (node) and this arc (anchor) share a path of study?
-				if(nodes[j]['path_of_study'].indexOf(anchors[i]['path_of_study']) > -1){					
-					var newLink = { source:j, target:i, value: 1 };
-					links.push(newLink);
+			// Adding a radius to our objects (for collision purposes)
+			for(var i = 0; i < nodes.length; i++){
+				// Anchors will have radius 1, so they don't
+				// prevent courses from getting inside the main donut
+				nodes[i]['radius'] = i < anchors.length ? 1 : radius;
+			}					
 
-					// Highlight arc color
-					d3.select('#arc_' + i).classed("linked", true);	
+			// CREATING THE LINKS
+			links = [];
+			// Loop through anchors
+			for(var i = 0; i < anchors.length; i++){
+				// Loop through nodes
+				// (skip the anchors, which come first in the array)
+				for(var j = anchors.length; j < nodes.length; j++){
+					// Do this course (node) and this arc (anchor) share a path of study?
+					if(nodes[j]['path_of_study'].indexOf(anchors[i]['path_of_study']) > -1){					
+						var newLink = { source:j, target:i, value: 1 };
+						links.push(newLink);
+
+						// Highlight arc color
+						d3.select('#arc_' + i).classed("linked", true);	
+					}
 				}
 			}
+			// console.log(links);			
+
+			force = d3.layout.force()
+			    .size([width, height])
+			    .gravity(0.05)
+			    .linkDistance(linkDist)	// standard link length
+			    .linkStrength(0.1)		// how flexible the links are		    
+			    .nodes(nodes)
+			    .links(links)		    
+			    // .charge(function(d, i) {
+			    // 	// Anchors will repel, course nodes won't
+			    // 	return i < anchors.length ? -100 : 0
+
+			    // 	// return i ? 0 : -100 is the same as
+			    // 	// if(i > 0) { 0 } else { 1000 }
+			    // 	// Which means:
+			    // 	// * the first node (anchor) will repel all other ones (-1000)
+			    // 	// * the others don't repel each other
+			    // })
+			    ;			
+
+			// Making our anchors fixed
+			for(var i = 0; i < anchors.length; i++){
+				// console.log(nodes[i]);
+				nodes[i].fixed = true;
+				nodes[i].x = nodes[i].anchorX + width/2;
+				nodes[i].y = nodes[i].anchorY + height/2;
+			}
+
+			// Appending the actual SVG objects
+			coursesChart = svg.append("g")
+				.attr('id', 'courses-chart')		
+				;			
 		}
-		// console.log(links);	
 
-		var force = d3.layout.force()
-		    .size([width, height])
-		    .gravity(0.05)
-		    .linkDistance(linkDist)	// standard link length
-		    .linkStrength(0.1)		// how flexible the links are		    
-		    .nodes(nodes)
-		    .links(links)		    
-		    // .charge(function(d, i) {
-		    // 	// Anchors will repel, course nodes won't
-		    // 	return i < anchors.length ? -100 : 0
+		function update(){
 
-		    // 	// return i ? 0 : -100 is the same as
-		    // 	// if(i > 0) { 0 } else { 1000 }
-		    // 	// Which means:
-		    // 	// * the first node (anchor) will repel all other ones (-1000)
-		    // 	// * the others don't repel each other
-		    // })
-		    ;
+			var link = coursesChart.selectAll(".link")
+	      		.data(links)
+	    		.enter()
+	    		.append("line")
+	      		.classed("link", function(d, i){
+	      			// Links to the selected anchor won't be visible
+	      			return d.target.path_of_study != selected;
+	      		})
+	      		.style("stroke-width", function(d) { return Math.sqrt(d.value); });
 
-		// Making our anchors fixed
-		for(var i = 0; i < anchors.length; i++){
-			// console.log(nodes[i]);
-			nodes[i].fixed = true;
-			nodes[i].x = nodes[i].anchorX + width/2;
-			nodes[i].y = nodes[i].anchorY + height/2;
+			var circles = coursesChart.selectAll("circle")
+				.data(nodes)
+				.enter()
+				.append("circle")
+			    .attr("r", radius)
+			    .attr("id", function(d, i){
+			    	return d.title;
+			    })
+			    .attr('class', function(d, i){
+			    	// Anchors won't be visible
+					return i > anchors.length ? 'course' : 'anchor';
+			    })
+			    .on('click', function(d, i){
+			    	console.log(d.path_of_study.length);
+			    	console.log(d.path_of_study);
+			    })
+			    ;
+
+			force.on("tick", function(e) {
+				var q = d3.geom.quadtree(nodes),
+					i = 0,
+					n = nodes.length;
+
+				while (++i < n) q.visit(collide(nodes[i]));
+
+				coursesChart.selectAll("circle")
+					.attr("cx", function(d) { return d.x; })
+					.attr("cy", function(d) { return d.y; });
+
+				link.attr("x1", function(d) { return d.source.x; })
+					.attr("y1", function(d) { return d.source.y; })
+					.attr("x2", function(d) { return d.target.x; })
+					.attr("y2", function(d) { return d.target.y; });
+			});				    
+
+			// Initializing calculations
+			force.start();
 		}
-
-		// Initializing calculations
-		force.start();
-		
-		// Appending the actual SVG objects
-		var coursesChart = svg.append("g")
-			.attr('id', 'courses-chart')		
-			;
-	
-		var link = coursesChart.selectAll(".link")
-      		.data(links)
-    		.enter()
-    		.append("line")
-      		.classed("link", function(d, i){
-      			// Links to the selected anchor won't be visible
-      			return d.target.path_of_study != selected;
-      		})
-      		.style("stroke-width", function(d) { return Math.sqrt(d.value); });
-
-		var circles = coursesChart.selectAll("circle")
-			.data(nodes)
-			.enter()
-			.append("circle")
-		    .attr("r", radius)
-		    .attr("id", function(d, i){
-		    	return d.title;
-		    })
-		    .attr('class', function(d, i){
-		    	// Anchors won't be visible
-				return i > anchors.length ? 'course' : 'anchor';
-		    })
-		    .on('click', function(d, i){
-		    	console.log(d.path_of_study.length);
-		    	console.log(d.path_of_study);
-		    })
-		    ;
-
-		force.on("tick", function(e) {
-			var q = d3.geom.quadtree(nodes),
-				i = 0,
-				n = nodes.length;
-
-			while (++i < n) q.visit(collide(nodes[i]));
-
-			coursesChart.selectAll("circle")
-				.attr("cx", function(d) { return d.x; })
-				.attr("cy", function(d) { return d.y; });
-
-			link.attr("x1", function(d) { return d.source.x; })
-				.attr("y1", function(d) { return d.source.y; })
-				.attr("x2", function(d) { return d.target.x; })
-				.attr("y2", function(d) { return d.target.y; });
-		});	
 
 		function collide(node) {
 		  var r = node.radius + 16,
@@ -344,7 +353,10 @@ app.main = (function(){
 		    }
 		    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
 		  };
-		}		    
+		}
+
+		setup();
+		update();
 	};	
 
 	var init = function(){
