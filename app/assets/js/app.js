@@ -6,6 +6,7 @@ app.main = (function(){
     var height = window.innerHeight;
     var svg;		// SVG object
     var courses;	// Course data loaded async with subject data
+    var filteredCourses; // Will keep track of user selections
 
 	/*------------------ CATEGORIES -------------------*/
 	// Categories change from term to term. Think about how to handle arc updates
@@ -33,6 +34,7 @@ app.main = (function(){
 			for(var i = 0; i < objData.length; i++){
 				objData[i] = checkLines(objData[i]);
 			}
+
 			// console.log(data);
 			displayCategories(objData);
 		});
@@ -99,10 +101,12 @@ app.main = (function(){
 				d3.select(this).classed("selected", !d3.select(this).classed("selected"));
 				
 				// Filter data
-				var filterered = filterCoursesBy(d.data.path_of_study);
+				filteredCourses = _.filter(courses, function(o) {
+					return o.path_of_study.indexOf(d.data.path_of_study) > -1;
+				});
 
 				// Display network
-				displayCourses(filterered, anchors, d.data.path_of_study);
+				displayCourses(anchors, d.data.path_of_study);
 				
 			})
 			// Compute coords so we can draw the network later
@@ -186,29 +190,14 @@ app.main = (function(){
 		d3.json('assets/data/lang_courses_fall_2015.json', function(error, data) {
 			if (error) return console.warn(error);
 			// console.log('Loaded courses:');
-			// console.log(data);
-			courses = data;
+			console.log(data);
+			courses = data;			// Won't change unless navigating to a different term
+			filteredCourses = data; // Stores user's current selection
 		});
 	};
 
-	var filterCoursesBy = function(pathOfStudy){
-		var filteredCourses = [];
-		for(var courseNumber in courses){
-			if(courses[courseNumber]['path_of_study'].indexOf(pathOfStudy) > -1){
-				// console.log(courses[courseNumber]['path_of_study']);
-				filteredCourses.push({
-					courseNumber: courseNumber,
-					title: courses[courseNumber]['title'],
-					path_of_study: courses[courseNumber]['path_of_study']
-				});
-			}
-		}
-		// console.log(filteredCourses);
-		return filteredCourses;
-	};
-
 	// (list of courses, position of arcs, selected pathOfStudy)
-	var displayCourses = function(data, anchors, selected){
+	var displayCourses = function(anchors, selected){
 		console.log('Called displayCourses');
 		// console.log(data);
 		// console.log(anchors);
@@ -219,7 +208,7 @@ app.main = (function(){
 		var linkDist = width/7;
 
 		// DATA
-		var nodes = data;
+		var nodes = filteredCourses;
 
 		// Prepending anchors to nodes array
 		for(var i = anchors.length - 1; i >= 0; i --){

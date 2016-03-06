@@ -74,10 +74,20 @@ for(var courseNumber in courses){
 		}
 	}
 }
+// jsonfile.writeFileSync('exported_data/lang_courses_fall_2015.json', courses);
 
-// 4. Generate courses file
-jsonfile.writeFileSync('exported_data/lang_courses_fall_2015.json', courses);
+// 4. Convert courses object to array
+var coursesArray = [];
+for(var courseNumber in courses){
+	var newObj = courses[courseNumber]; 
+	newObj['course_number'] = courseNumber;
+	coursesArray.push(newObj);
+}
+// console.log(coursesArray);
+jsonfile.writeFileSync('exported_data/lang_courses_fall_2015.json', coursesArray);
 
+
+/*---------- CATEGORIES ----------*/
 // 5. Generate categories file
 var pathsOfStudy = [];
 for(var courseNumber in courses){
