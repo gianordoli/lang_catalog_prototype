@@ -254,6 +254,7 @@ app.main = (function(){
 			update();
 		}
 
+		/*---------- PUBLIC ----------*/
         newGraph.addNode = function(obj) {
         	obj = addNodeId(obj);		// Anchor id: path_of_study; Course id: course_number
         	obj = addNodeRadius(obj);
@@ -269,6 +270,22 @@ app.main = (function(){
             update();
         };
 
+        newGraph.removeNode = function(id){
+            var i = 0;
+            var nodeIndex = findNodeIndex(id);
+            // Remove links; gotta use a while, because the size of the array will change
+            console.log(links);
+            while (i < links.length) {
+                if ((links[i]['source']['index'] === nodeIndex) || (links[i]['target']['index'] === nodeIndex)) {
+                    links.splice(i, 1);
+                }
+                else i++;
+            }
+            nodes.splice(findNodeIndex(id), 1);
+            update();
+        }
+
+		/*---------- PRIVATE ---------*/
         var addNodeId = function(_obj){
         	var obj = _obj;
         	obj.id = obj.isAnchor ? obj.path_of_study : obj.course_number;
@@ -321,26 +338,6 @@ app.main = (function(){
 			}
 		}
 
-		newGraph.updateLinks = function(){
-			// CREATING THE LINKS
-			// Loop through anchors
-			for(var i = 0; i < anchors.length; i++){
-				// Loop through nodes
-				// (skip the anchors, which come first in the array)
-				for(var j = anchors.length; j < nodes.length; j++){
-					// Do this course (node) and this arc (anchor) share a path of study?
-					if(nodes[j]['path_of_study'].indexOf(anchors[i]['path_of_study']) > -1){					
-						var newLink = { source:j, target:i, value: 1 };
-						links.push(newLink);
-
-						// Highlight arc color
-						d3.select('#arc_' + i).classed("linked", true);
-					}
-				}
-			}
-			// console.log(links);				
-		};
-
 		var update = function(selected){
 			
 			console.log('myGraph.update()');
@@ -378,6 +375,7 @@ app.main = (function(){
 			    .on('click', function(d, i){
 			    	console.log(d.path_of_study.length);
 			    	console.log(d.path_of_study);
+			    	newGraph.removeNode(d.id);
 			    })
 			    ;
 
@@ -455,6 +453,8 @@ app.main = (function(){
 
 		graph = new myGraph();
 
+		debugLinks();
+
 		// Debugging, not really using this now
 		function debugLinks(){
 			var source = '[{"title":"Rvolution & Pop Media in Hist","path_of_study":["Global Studies"],"course_number":"910"},{"title":"Documentary Self","path_of_study":["The Arts","Culture & Media","Economics","Literary Studies","Journalism + Design","Religious Studies","Screen Studies"],"course_number":"920"},{"title":"The Spiritual Autobiography","path_of_study":["Global Studies","Anthropology","Contemporary Music","Journalism + Design","Psychology","Education Studies","The Arts","Liberal Arts","Literary Studies","Culture & Media","Economics","History","Sociology","Theater","Religious Studies","Interdisciplinary Science","Philosophy","Social Inquiry","Politics"],"course_number":"1000"},{"title":"Reading Poetry","path_of_study":["The Arts","Interdisciplinary Science"],"course_number":"1002"},{"title":"Fantastic Short Fiction","path_of_study":["Economics"],"course_number":"1003"},{"title":"Self and Social Structure","path_of_study":["Liberal Arts"],"course_number":"1008"},{"title":"Fundamentals of Western Music","path_of_study":["Contemporary Music","Screen Studies"],"course_number":"1010"}]';
@@ -470,7 +470,7 @@ app.main = (function(){
 				}else{
 					clearInterval(test);
 				}
-			}, 4000);
+			}, 1000);
 		}
 	};
 
