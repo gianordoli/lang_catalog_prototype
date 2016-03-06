@@ -247,20 +247,18 @@ app.main = (function(){
 				console.log(i);
 				newGraph.addNode(anchors[i]);
 			}
-			console.log(nodes);
 
 			newGraph.updateLinks();
 
-			fixAnchors();
-
-
 			update();
+			console.log(nodes);
 		}
 
         newGraph.addNode = function(obj) {
         	obj = addNodeId(obj);
         	obj = addNodeRadius(obj);
-            nodes.push(obj);
+        	obj = fixAnchor(obj);
+            nodes.push(obj);    
             update();
         };
 
@@ -276,15 +274,16 @@ app.main = (function(){
 			return obj;
 		};        
 
-		var fixAnchors = function(){
-			// Making our anchors fixed
-			for(var i = 0; i < anchors.length; i++){
+		var fixAnchor = function(_obj){
+			var obj = _obj;
+			if(obj.isAnchor){
 				// console.log(nodes[i]);
-				nodes[i].fixed = true;
-				nodes[i].x = nodes[i].anchorX + width/2;
-				nodes[i].y = nodes[i].anchorY + height/2;
+				obj.fixed = true;
+				obj.x = obj.anchorX + width/2;
+				obj.y = obj.anchorY + height/2;
 				// console.log(nodes[i]);
 			}
+			return obj;
 		};
 
 		newGraph.updateLinks = function(){
@@ -372,6 +371,7 @@ app.main = (function(){
 			    // 	// * the others don't repel each other
 			    // })
 			    ;
+
 			force.start();
 
 		}
