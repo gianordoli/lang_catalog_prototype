@@ -213,6 +213,8 @@ app.main = (function(){
 
 	// (list of courses, position of arcs, selected pathOfStudy)
 	function myGraph(){
+
+		var newGraph = {};
 		
 		console.log('myGraph()');
 		// console.log(data);
@@ -224,47 +226,57 @@ app.main = (function(){
 		var force;				// D3 force-directed layout
 		var coursesChart;		// SVG object
 
-		this.setup = function(){
+		var setup = function(){
 
 			console.log('myGraph.setup()');
 			
 			radius = 12;
 			linkDist = width/7;
-
-			nodes = anchors;
+			nodes = [];
 			links = [];
-
-			this.updateNodes();
-			this.updateLinks();
-
 			force = d3.layout.force()
-			    .size([width, height])
-			    .gravity(0.05)
-			    .linkDistance(linkDist)	// standard link length
-			    .linkStrength(0.1)		// how flexible the links are		    
-			    .nodes(nodes)
-			    .links(links)		    
-			    // .charge(function(d, i) {
-			    // 	// Anchors will repel, course nodes won't
-			    // 	return i < anchors.length ? -100 : 0
-
-			    // 	// return i ? 0 : -100 is the same as
-			    // 	// if(i > 0) { 0 } else { 1000 }
-			    // 	// Which means:
-			    // 	// * the first node (anchor) will repel all other ones (-1000)
-			    // 	// * the others don't repel each other
-			    // })
-			    ;
-
-			this.fixAnchors();
-
-			// Appending the actual SVG objects
+				.nodes(nodes)
+				.links(links)
+				;
 			coursesChart = svg.append("g")
 				.attr('id', 'courses-chart')		
-				;			
+				;				
+
+			// Adding anchors to nodes
+			for(var i = 0; i < anchors.length; i++){
+				console.log(i);
+				newGraph.addNode(anchors[i]);
+			}
+			console.log(nodes);
+
+			newGraph.updateLinks();
+
+			fixAnchors();
+
+
+			update();
 		}
 
-		this.fixAnchors = function(){
+        newGraph.addNode = function(obj) {
+        	obj = addNodeId(obj);
+        	obj = addNodeRadius(obj);
+            nodes.push(obj);
+            update();
+        };
+
+        var addNodeId = function(_obj){
+        	var obj = _obj;
+        	obj.id = obj.isAnchor ? 'anchor_' + obj.path_of_study : 'course_' + obj.course_number;
+        	return obj;
+        };
+
+		var addNodeRadius = function(_obj){
+			var obj = _obj;
+			obj['radius'] = obj.isAnchor ? 1 : radius;
+			return obj;
+		};        
+
+		var fixAnchors = function(){
 			// Making our anchors fixed
 			for(var i = 0; i < anchors.length; i++){
 				// console.log(nodes[i]);
@@ -273,18 +285,9 @@ app.main = (function(){
 				nodes[i].y = nodes[i].anchorY + height/2;
 				// console.log(nodes[i]);
 			}
-		}
+		};
 
-		this.updateNodes = function(){
-			// Adding a radius to our objects (for collision purposes)
-			for(var i = 0; i < nodes.length; i++){
-				// Anchors will have radius 1, so they don't
-				// prevent courses from getting inside the main donut
-				nodes[i]['radius'] = i < anchors.length ? 1 : radius;
-			}
-		}
-
-		this.updateLinks = function(){
+		newGraph.updateLinks = function(){
 			// CREATING THE LINKS
 			// Loop through anchors
 			for(var i = 0; i < anchors.length; i++){
@@ -297,14 +300,14 @@ app.main = (function(){
 						links.push(newLink);
 
 						// Highlight arc color
-						d3.select('#arc_' + i).classed("linked", true);	
+						d3.select('#arc_' + i).classed("linked", true);
 					}
 				}
 			}
 			// console.log(links);				
-		}		
+		};
 
-		this.update = function(selected){
+		var update = function(selected){
 			
 			console.log('myGraph.update()');
 
@@ -354,6 +357,21 @@ app.main = (function(){
 					.attr("y2", function(d) { return d.target.y; });
 			});
 
+			force.size([width, height])
+			    .gravity(0.05)
+			    .linkDistance(linkDist)	// standard link length
+			    .linkStrength(0.1)		// how flexible the links are		    	    
+			    // .charge(function(d, i) {
+			    // 	// Anchors will repel, course nodes won't
+			    // 	return i < anchors.length ? -100 : 0
+
+			    // 	// return i ? 0 : -100 is the same as
+			    // 	// if(i > 0) { 0 } else { 1000 }
+			    // 	// Which means:
+			    // 	// * the first node (anchor) will repel all other ones (-1000)
+			    // 	// * the others don't repel each other
+			    // })
+			    ;
 			force.start();
 
 		}
@@ -382,15 +400,20 @@ app.main = (function(){
 		  };
 		}
 
-		this.setup();
-		this.update();
+		setup();
+
+		return newGraph;
 	};	
 
 	function drawGraph(){
 
 		console.log('drawGraph()');
-		
+
 		var graph = new myGraph();
+		// setTimeout(function(){
+		// 	console.log('add node');
+		// 	graph.addNode('gabriel');
+		// }, 500);
 	};
 
 	var init = function(){
