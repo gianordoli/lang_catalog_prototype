@@ -414,20 +414,6 @@ app.main = (function(){
 			}
 		};
 
-		// var checkLinkWithSelected = function(target){
-		// 	// Checks if the link is connected to one of the selected arcs
-		// 	// If so, add class to make it invisible
-  // 			var isFromSelected = false;
-  // 			for(var i = 0; i < selected.length; i++){
-  // 				console.log(nodes[d.target]['path_of_study']);
-  // 				if(nodes[d.target]['path_of_study'] === selected[i]){
-  // 					isFromSelected = true;
-  // 					break;
-  // 				}
-  // 			}
-  // 			return isFromSelected;
-		// };
-
 		var update = function(){
 			
 			// console.log('myGraph.update()');
