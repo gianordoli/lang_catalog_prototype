@@ -391,6 +391,7 @@ app.main = (function(){
         };
 
 		var addLinks = function(obj){
+			// Check for connections and add links for each new node
 			if(!obj.isAnchor){
 				// Loop through anchors
 				for(var i = 0; i < anchors.length; i++){
@@ -402,7 +403,8 @@ app.main = (function(){
 						// console.log(sourceIndex);
 						var newLink = { source: sourceIndex,
 										target: targetIndex,
-										value: 1 };
+										value: 	1
+									};
 						links.push(newLink);
 
 						// Highlight arc color
@@ -410,29 +412,32 @@ app.main = (function(){
 					}					
 				}
 			}
-		}
+		};
+
+		// var checkLinkWithSelected = function(target){
+		// 	// Checks if the link is connected to one of the selected arcs
+		// 	// If so, add class to make it invisible
+  // 			var isFromSelected = false;
+  // 			for(var i = 0; i < selected.length; i++){
+  // 				console.log(nodes[d.target]['path_of_study']);
+  // 				if(nodes[d.target]['path_of_study'] === selected[i]){
+  // 					isFromSelected = true;
+  // 					break;
+  // 				}
+  // 			}
+  // 			return isFromSelected;
+		// };
 
 		var update = function(){
 			
 			// console.log('myGraph.update()');
 
 			var linkSelection = coursesChart.selectAll('line')
-	      		.data(links);
+	      		.data(links)
+	      		;
 
 	      	var linkEnter = linkSelection.enter()
 	    		.append("line")
-	      		.classed("from-selected", function(d, i){
-	      			// Links to the selected anchor won't be visible
-	      			var isFromSelected = false;
-	      			for(var i = 0; i < selected.length; i++){
-	      				console.log(nodes[d.target]['path_of_study']);
-	      				if(nodes[d.target]['path_of_study'] === selected[i]){
-	      					isFromSelected = true;
-	      					break;
-	      				}
-	      			}
-	      			return isFromSelected;
-	      		})
 	      		.style("stroke-width", function(d) { return Math.sqrt(d.value); })
 	      		;
 
@@ -501,6 +506,18 @@ app.main = (function(){
 			    ;
 
 			force.start();
+
+
+			// Anytime we update the graph, we need to check links to the selected anchor
+			// and make them invisible
+	      	linkSelection.each(function(d, i){
+	      		d3.select(this).classed("from-selected", function(d){
+					// After the force starts running, our { source: 0, target: 2 } link array changes
+					// Instead of pointing to a index, target and source point to the actual objects	      		
+	      			return selected.indexOf(d['target']['path_of_study']) > -1;
+	      		})	      		
+	      	})
+	      	;			
 		}
 
 		function collide(node) {

@@ -4,7 +4,7 @@
 * ~~Check categories not loading~~
 * ~~Prevent nodes from getting stuck outside~~
 * Map arc grayscale to connectivity
-* Draw invisible links from parent
+* ~~Draw invisible links from parent~~
 * Tooltip
 * Send to Lang
 
