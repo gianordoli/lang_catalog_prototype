@@ -43,7 +43,7 @@ app.main = (function(){
 			}
 
 			// console.log(data);
-			displayCategories(objData);
+			displayPathsOfStudy(objData);
 		});
 
 		var checkLines = function(_obj){
@@ -58,7 +58,7 @@ app.main = (function(){
 		};		
 	};
 
-	var displayCategories = function(dataset){
+	var displayPathsOfStudy = function(dataset){
 
 		// VARS
 		var radius = 490/2;
@@ -215,242 +215,7 @@ app.main = (function(){
 		});
 	};
 
-	// (list of courses, position of arcs, selected pathOfStudy)
-	function myGraph(){
-
-		var newGraph = {};
-		
-		console.log('myGraph()');
-		// console.log(data);
-		// console.log(anchors);
-		// console.log(selected);
-
-		var radius, linkDist;	// LAYOUT
-		var nodes, links;		// DATA
-		var force;				// D3 force-directed layout
-		var coursesChart;		// SVG object
-
-		var setup = function(){
-
-			console.log('myGraph.setup()');
-			
-			radius = 12;
-			linkDist = width/7;
-			nodes = [];
-			links = [];
-			force = d3.layout.force()
-				.nodes(nodes)
-				.links(links)
-				;
-			coursesChart = svg.append("g")
-				.attr('id', 'courses-chart')		
-				;				
-
-			// Adding anchors to nodes
-			for(var i = 0; i < anchors.length; i++){
-				newGraph.addNode(anchors[i]);
-			}
-			// newGraph.updateLinks();
-
-			update();
-		}
-
-		/*---------- PUBLIC ----------*/
-        newGraph.addNode = function(obj) {
-        	obj = addNodeId(obj);		// Anchor id: path_of_study; Course id: course_number
-        	obj = addNodeRadius(obj);
-
-        	// Before really updating the graph, let's check if this add haven't been yet added
-        	if(findNodeIndex(obj.id) === undefined){
-	            nodes.push(obj);
-
-	        	if (obj.isAnchor) {			// We need to make anchors fixed
-	        		obj = fixAnchor(obj)
-	        	}else{						// And add links to courses
-					addLinks(obj);
-					// console.log(links);
-	        	}
-
-	            update();
-        	}
-        };
-
-        newGraph.removeNode = function(id){
-            var i = 0;
-            var nodeIndex = findNodeIndex(id);
-            // Remove links; gotta use a while, because the size of the array will change
-            while (i < links.length) {
-                if ((links[i]['source']['index'] === nodeIndex) || (links[i]['target']['index'] === nodeIndex)) {
-                    links.splice(i, 1);
-                }
-                else i++;
-            }
-            nodes.splice(findNodeIndex(id), 1);
-            update();
-        }
-
-		/*---------- PRIVATE ---------*/
-        var addNodeId = function(_obj){
-        	var obj = _obj;
-        	obj.id = obj.isAnchor ? obj.path_of_study : obj.course_number;
-        	return obj;
-        };
-
-		var addNodeRadius = function(_obj){
-			var obj = _obj;
-			obj['radius'] = obj.isAnchor ? 1 : radius;
-			return obj;
-		};
-
-		var fixAnchor = function(_obj){
-			var obj = _obj;
-			// console.log(nodes[i]);
-			obj.fixed = true;
-			obj.x = obj.anchorX + width/2;
-			obj.y = obj.anchorY + height/2;
-			// console.log(nodes[i]);
-			return obj;
-		};
-
-        var findNodeIndex = function (id) {
-            for (var i = 0; i < nodes.length; i++) {
-                if (nodes[i].id === id) {
-                    return i;
-                }
-            }
-        };
-
-		var addLinks = function(obj){
-			if(!obj.isAnchor){
-				// Loop through anchors
-				for(var i = 0; i < anchors.length; i++){
-					
-					if(obj['path_of_study'].indexOf(anchors[i]['path_of_study']) > -1){
-						
-						var sourceIndex = findNodeIndex(obj['course_number']);
-						var targetIndex = findNodeIndex(anchors[i]['path_of_study']);
-						// console.log(sourceIndex);
-						var newLink = { source: sourceIndex,
-										target: targetIndex,
-										value: 1 };
-						links.push(newLink);
-
-						// Highlight arc color
-						d3.select('#arc_' + targetIndex).classed("linked", true);
-					}					
-				}
-			}
-		}
-
-		var update = function(selected){
-			
-			console.log('myGraph.update()');
-
-			var linkSelection = coursesChart.selectAll('line')
-	      		.data(links);
-
-	      	var linkEnter = linkSelection.enter()
-	    		.append("line")
-	      		.classed("link", function(d, i){
-	      			// Links to the selected anchor won't be visible
-	      			return d.target.path_of_study != selected;
-	      		})
-	      		.style("stroke-width", function(d) { return Math.sqrt(d.value); })
-	      		;
-
-	      	linkSelection.exit()
-	      		.remove()
-	      		;
-
-			var nodeSelection = coursesChart.selectAll("circle")
-				.data(nodes);
-
-			var nodeEnter = nodeSelection.enter()
-				.append("circle")
-			    .attr("r", radius)
-			    .attr("id", function(d, i){
-			    	return d.title;
-			    })
-			    .attr('class', function(d, i){
-			    	// return 'course';
-			    	// Anchors won't be visible
-					return d.isAnchor ? 'anchor' : 'course';
-			    })
-			    .on('click', function(d, i){
-			    	console.log(d.path_of_study.length);
-			    	console.log(d.path_of_study);
-			    	// newGraph.removeNode(d.id);
-			    })
-			    ;
-
-			nodeSelection.exit()
-				.remove()
-				;
-
-			force.on("tick", function(e) {
-				var q = d3.geom.quadtree(nodes),
-					i = 0,
-					n = nodes.length;
-
-				while (++i < n) q.visit(collide(nodes[i]));
-
-                nodeSelection.attr("cx", function(d) { return d.x; })
-					.attr("cy", function(d) { return d.y; });
-
-				linkSelection.attr("x1", function(d) { return d.source.x; })
-					.attr("y1", function(d) { return d.source.y; })
-					.attr("x2", function(d) { return d.target.x; })
-					.attr("y2", function(d) { return d.target.y; });
-			});
-
-			force.size([width, height])
-			    .gravity(0.05)
-			    .linkDistance(linkDist)	// standard link length
-			    .linkStrength(0.1)		// how flexible the links are		    	    
-			    // .charge(function(d, i) {
-			    // 	// Anchors will repel, course nodes won't
-			    // 	return i < anchors.length ? -100 : 0
-
-			    // 	// return i ? 0 : -100 is the same as
-			    // 	// if(i > 0) { 0 } else { 1000 }
-			    // 	// Which means:
-			    // 	// * the first node (anchor) will repel all other ones (-1000)
-			    // 	// * the others don't repel each other
-			    // })
-			    ;
-
-			force.start();
-		}
-
-		function collide(node) {
-		  var r = node.radius + 16,
-		      nx1 = node.x - r,
-		      nx2 = node.x + r,
-		      ny1 = node.y - r,
-		      ny2 = node.y + r;
-		  return function(quad, x1, y1, x2, y2) {
-		    if (quad.point && (quad.point !== node)) {
-		      var x = node.x - quad.point.x,
-		          y = node.y - quad.point.y,
-		          l = Math.sqrt(x * x + y * y),
-		          r = node.radius + quad.point.radius;
-		      if (l < r) {
-		        l = (l - r) / l * .5;
-		        node.x -= x *= l;
-		        node.y -= y *= l;
-		        quad.point.x += x;
-		        quad.point.y += y;
-		      }
-		    }
-		    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
-		  };
-		}
-
-		setup();
-
-		return newGraph;
-	};	
-
+	// The donut 'communicates' with the graph through these 2 functions
 	function drawGraph(){
 
 		console.log('drawGraph()');
@@ -512,7 +277,260 @@ app.main = (function(){
 		}
 
 		prevFilter = newFilter;
-	}
+	}	
+
+	// (list of courses, position of arcs, selected pathOfStudy)
+	function myGraph(){
+
+		var newGraph = {};
+		
+		console.log('myGraph()');
+		// console.log(data);
+		// console.log(anchors);
+		// console.log(selected);
+
+		var radius, linkDist;	// LAYOUT
+		var nodes, links;		// DATA
+		var force;				// D3 force-directed layout
+		var coursesChart;		// SVG object
+
+		var setup = function(){
+
+			console.log('myGraph.setup()');
+			
+			radius = 12;
+			linkDist = width/10;
+			nodes = [];
+			links = [];
+			force = d3.layout.force()
+				.nodes(nodes)
+				.links(links)
+				;
+			coursesChart = svg.append("g")
+				.attr('id', 'courses-chart')		
+				;				
+
+			// Adding anchors to nodes
+			for(var i = 0; i < anchors.length; i++){
+				newGraph.addNode(anchors[i]);
+			}
+			// newGraph.updateLinks();
+
+			update();
+		}
+
+		/*---------- PUBLIC ----------*/
+        newGraph.addNode = function(obj) {
+        	obj = addIdToNode(obj);		// Anchor id: path_of_study; Course id: course_number
+        	obj = addRadiusToNode(obj);
+
+        	// Before really updating the graph, let's check if this add haven't been yet added
+        	if(findNodeIndexById(obj.id) === undefined){
+	            nodes.push(obj);
+
+	        	if (obj.isAnchor) {			// We need to make anchors fixed
+	        		obj = fixAnchor(obj)
+	        	}else{						// And add links to courses
+					addLinks(obj);
+					// console.log(links);
+	        	}
+
+	            update();
+        	}
+        };
+
+        newGraph.removeNode = function(id){
+            var i = 0;
+            var nodeIndex = findNodeIndexById(id);
+            // Remove links; gotta use a while, because the size of the array will change
+            while (i < links.length) {
+                if ((links[i]['source']['index'] === nodeIndex) || (links[i]['target']['index'] === nodeIndex)) {
+                    links.splice(i, 1);
+                }
+                else i++;
+            }
+            nodes.splice(findNodeIndexById(id), 1);
+            update();
+        }
+
+		/*---------- PRIVATE ---------*/
+        var addIdToNode = function(_obj){
+        	var obj = _obj;
+        	obj.id = obj.isAnchor ? obj.path_of_study : obj.course_number;
+        	return obj;
+        };
+
+		var addRadiusToNode = function(_obj){
+			var obj = _obj;
+			obj['radius'] = obj.isAnchor ? 1 : radius;
+			return obj;
+		};
+
+		var addLinkCountToNode = function(_obj){
+			var obj = _obj;
+			obj['link_count'] = 0;
+			return obj;
+		};
+
+		var fixAnchor = function(_obj){
+			var obj = _obj;
+			// console.log(nodes[i]);
+			obj.fixed = true;
+			obj.x = obj.anchorX + width/2;
+			obj.y = obj.anchorY + height/2;
+			// console.log(nodes[i]);
+			return obj;
+		};
+
+        var findNodeIndexById = function (id) {
+            for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].id === id) {
+                    return i;
+                }
+            }
+        };
+
+		var addLinks = function(obj){
+			if(!obj.isAnchor){
+				// Loop through anchors
+				for(var i = 0; i < anchors.length; i++){
+					
+					if(obj['path_of_study'].indexOf(anchors[i]['path_of_study']) > -1){
+						
+						var sourceIndex = findNodeIndexById(obj['course_number']);			// Course
+						var targetIndex = findNodeIndexById(anchors[i]['path_of_study']);	// Anchor
+						// console.log(sourceIndex);
+						var newLink = { source: sourceIndex,
+										target: targetIndex,
+										value: 1 };
+						links.push(newLink);
+
+						// Highlight arc color
+						// d3.select('#arc_' + targetIndex).classed("linked", true);
+					}					
+				}
+			}
+		}
+
+		var update = function(){
+			
+			// console.log('myGraph.update()');
+
+			var linkSelection = coursesChart.selectAll('line')
+	      		.data(links);
+
+	      	var linkEnter = linkSelection.enter()
+	    		.append("line")
+	      		.classed("from-selected", function(d, i){
+	      			// Links to the selected anchor won't be visible
+	      			var isFromSelected = false;
+	      			for(var i = 0; i < selected.length; i++){
+	      				console.log(nodes[d.target]['path_of_study']);
+	      				if(nodes[d.target]['path_of_study'] === selected[i]){
+	      					isFromSelected = true;
+	      					break;
+	      				}
+	      			}
+	      			return isFromSelected;
+	      		})
+	      		.style("stroke-width", function(d) { return Math.sqrt(d.value); })
+	      		;
+
+	      	linkSelection.exit()
+	      		.remove()
+	      		;
+
+			var nodeSelection = coursesChart.selectAll("circle")
+				.data(nodes);
+
+			var nodeEnter = nodeSelection.enter()
+				.append("circle")
+			    .attr("r", radius)
+			    .attr("id", function(d, i){
+			    	return d.title;
+			    })
+			    .attr('class', function(d, i){
+			    	// return 'course';
+			    	// Anchors won't be visible
+					return d.isAnchor ? 'anchor' : 'course';
+			    })
+			    .on('click', function(d, i){
+			    	// console.log(d.path_of_study.length);
+			    	// console.log(d.path_of_study);
+			    	// newGraph.removeNode(d.id);
+			    	console.log(d);
+			    })
+	      		// .each(function(d, i){	
+	      		// 	if(!d.isAnchor){
+	      		// 		// Let's make nodes show up somewhere inside the donut
+	      		// 		// Otherwise they might get stuck outside
+	      		// 		var iniX = width/2 + Math.round(Math.random()*200) * (Math.random() < 0.5 ? -1 : 1);
+	      		// 		var iniY = height/2 + Math.round(Math.random()*200) * (Math.random() < 0.5 ? -1 : 1);
+		      	// 		d.x = iniX;
+		      	// 		d.y = iniY;
+		      	// 		d.px = iniX;
+		      	// 		d.py = iniY;
+	      		// 	}
+	      		// })			    
+			    ;
+
+			nodeSelection.exit()
+				.remove()
+				;
+
+			force.on("tick", function(e) {
+				var q = d3.geom.quadtree(nodes),
+					i = 0,
+					n = nodes.length;
+
+				while (++i < n) q.visit(collide(nodes[i]));
+
+                nodeSelection.attr("cx", function(d) { return d.x; })
+					.attr("cy", function(d) { return d.y; });
+
+				linkSelection.attr("x1", function(d) { return d.source.x; })
+					.attr("y1", function(d) { return d.source.y; })
+					.attr("x2", function(d) { return d.target.x; })
+					.attr("y2", function(d) { return d.target.y; });
+			});
+
+			force.size([width, height])
+			    .gravity(0.08)			// force towards center
+			    .linkDistance(linkDist)	// standard link length
+			    .linkStrength(0.1)		// how flexible the links are
+			    ;
+
+			force.start();
+		}
+
+		function collide(node) {
+		  var r = node.radius + 16,
+		      nx1 = node.x - r,
+		      nx2 = node.x + r,
+		      ny1 = node.y - r,
+		      ny2 = node.y + r;
+		  return function(quad, x1, y1, x2, y2) {
+		    if (quad.point && (quad.point !== node)) {
+		      var x = node.x - quad.point.x,
+		          y = node.y - quad.point.y,
+		          l = Math.sqrt(x * x + y * y),
+		          r = node.radius + quad.point.radius;
+		      if (l < r) {
+		        l = (l - r) / l * .5;
+		        node.x -= x *= l;
+		        node.y -= y *= l;
+		        quad.point.x += x;
+		        quad.point.y += y;
+		      }
+		    }
+		    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+		  };
+		}
+
+		setup();
+
+		return newGraph;
+	};	
 
 	var init = function(){
 		console.log('Called init');
