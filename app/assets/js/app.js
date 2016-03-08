@@ -103,8 +103,11 @@ app.main = (function(){
 			})
 			.on('click', function(d, i){
 
-				// Toggle class
-				d3.select(this).classed("selected", !d3.select(this).classed("selected"));
+				// Toggle class and remove any added style
+				d3.select(this).classed("selected", !d3.select(this).classed("selected"))
+					.style('fill', null)
+					.style('stroke', null)
+					;
 
 				// Add/remove from selected list
 				var n = selected.indexOf(d.data.path_of_study);
@@ -221,6 +224,7 @@ app.main = (function(){
 		console.log('drawGraph()');
 
 		graph = new myGraph();
+		graph.setup();
 
 		// debugLinks();
 
@@ -277,6 +281,8 @@ app.main = (function(){
 		}
 
 		prevFilter = newFilter;
+
+		graph.update();
 	}	
 
 	// (list of courses, position of arcs, selected pathOfStudy)
@@ -294,64 +300,6 @@ app.main = (function(){
 		var force;				// D3 force-directed layout
 		var coursesChart;		// SVG object
 
-		var setup = function(){
-
-			console.log('myGraph.setup()');
-			
-			radius = 12;
-			linkDist = width/10;
-			nodes = [];
-			links = [];
-			force = d3.layout.force()
-				.nodes(nodes)
-				.links(links)
-				;
-			coursesChart = svg.append("g")
-				.attr('id', 'courses-chart')		
-				;				
-
-			// Adding anchors to nodes
-			for(var i = 0; i < anchors.length; i++){
-				newGraph.addNode(anchors[i]);
-			}
-			// newGraph.updateLinks();
-
-			update();
-		}
-
-		/*---------- PUBLIC ----------*/
-        newGraph.addNode = function(obj) {
-        	obj = addIdToNode(obj);		// Anchor id: path_of_study; Course id: course_number
-        	obj = addRadiusToNode(obj);
-
-        	// Before really updating the graph, let's check if this add haven't been yet added
-        	if(findNodeIndexById(obj.id) === undefined){
-	            nodes.push(obj);
-
-	        	if (obj.isAnchor) {			// We need to make anchors fixed
-	        		obj = fixAnchor(obj)
-	        	}else{						// And add links to courses
-					addLinks(obj);
-					// console.log(links);
-	        	}
-
-	            update();
-        	}
-        };
-
-        newGraph.removeNode = function(id){
-            var i = 0;
-            var nodeIndex = findNodeIndexById(id);
-            // Remove links; gotta use a while, because the size of the array will change
-            while (i < links.length) {
-                if ((links[i]['source']['index'] === nodeIndex) || (links[i]['target']['index'] === nodeIndex)) {
-                    links.splice(i, 1);
-                }
-                else i++;
-            }
-            nodes.splice(findNodeIndexById(id), 1);
-            update();
-        }
 
 		/*---------- PRIVATE ---------*/
         var addIdToNode = function(_obj){
@@ -406,15 +354,93 @@ app.main = (function(){
 										value: 	1
 									};
 						links.push(newLink);
-
-						// Highlight arc color
-						// d3.select('#arc_' + targetIndex).classed("linked", true);
+						
+						// Increase link count on node
+						nodes[targetIndex]['link_count'] ++;
+						// console.log(targetIndex + ': ' + nodes[targetIndex]['link_count']);
+						d3.select('#arc_' + targetIndex).classed("linked", true)
+							.style('fill', null)
+							.style('stroke', null)
+							;
 					}					
 				}
 			}
 		};
 
-		var update = function(){
+		/*---------- PUBLIC ----------*/
+        newGraph.addNode = function(obj) {
+        	obj = addIdToNode(obj);		// Anchor id: path_of_study; Course id: course_number
+        	obj = addRadiusToNode(obj);
+        	obj = addLinkCountToNode(obj);
+
+        	// Before really updating the graph, let's check if this add haven't been yet added
+        	if(findNodeIndexById(obj.id) === undefined){
+	            nodes.push(obj);
+
+	        	if (obj.isAnchor) {			// We need to make anchors fixed
+	        		obj = fixAnchor(obj)
+	        	}else{						// And add links to courses
+					addLinks(obj);
+					// console.log(links);
+	        	}
+
+	            newGraph.update();
+        	}
+        };
+
+        newGraph.removeNode = function(id){
+            var i = 0;
+            var nodeIndex = findNodeIndexById(id);
+            // Remove links; gotta use a while loop, because the size of the array will change
+            while (i < links.length) {
+                if ((links[i]['source']['index'] === nodeIndex) || (links[i]['target']['index'] === nodeIndex)) {
+                    
+                    // Decrease link count on node
+                    var targetIndex = links[i]['target']['index'];
+                    nodes[targetIndex]['link_count'] --;
+                    if(nodes[targetIndex]['link_count'] === 0){
+                    	d3.select('#arc_' + targetIndex).classed('linked', false)
+                    		.style('fill', null)
+							.style('stroke', null)
+							;
+                    }
+
+					// Remove link
+                    links.splice(i, 1);
+                }
+                else i++;
+            }
+            nodes.splice(findNodeIndexById(id), 1);
+            newGraph.update();
+        }
+
+		/*---------- PUBLIC: setup and update ----------*/
+		newGraph.setup = function(){
+
+			console.log('myGraph.setup()');
+			
+			radius = 12;
+			linkDist = width/10;
+			nodes = [];
+			links = [];
+			force = d3.layout.force()
+				.nodes(nodes)
+				.links(links)
+				;
+			coursesChart = svg.append("g")
+				.attr('id', 'courses-chart')		
+				;				
+
+			// Adding anchors to nodes
+			for(var i = 0; i < anchors.length; i++){
+				newGraph.addNode(anchors[i]);
+			}
+			// newGraph.updateLinks();
+
+			newGraph.update();
+		}        		
+
+		newGraph.update = function(){
 			
 			// console.log('myGraph.update()');
 
@@ -494,16 +520,45 @@ app.main = (function(){
 			force.start();
 
 
-			// Anytime we update the graph, we need to check links to the selected anchor
-			// and make them invisible
+			// Anytime we update the graph, we need to:
+
+			// 1. check links to the selected anchor and make them invisible
 	      	linkSelection.each(function(d, i){
 	      		d3.select(this).classed("from-selected", function(d){
 					// After the force starts running, our { source: 0, target: 2 } link array changes
 					// Instead of pointing to a index, target and source point to the actual objects	      		
 	      			return selected.indexOf(d['target']['path_of_study']) > -1;
 	      		})	      		
-	      	})
-	      	;			
+	      	});
+
+	      	// 2. Update the arcs color based on the link count
+            var linkCountScale = d3.scale.linear()
+                           .domain([                            // INPUT
+                                0,
+                                d3.max(nodes, function(d, i){
+                                    return d.link_count;
+                                })
+                            ])
+                           .range([100, 50]);                  // OUTPUT
+
+			nodeSelection.each(function(d, i){
+				
+				var arc = d3.select('#arc_' + i);
+
+				// If we have something selected...
+				if(selected.length > 0){
+
+					// Check if this node is an anchor
+					if(d.isAnchor){
+
+						// Check if it isn't part of the selection
+						if(!arc.classed('selected') && arc.classed('linked')){
+							var color = 'hsl(0, 0%, '+linkCountScale(d.link_count)+'%)';
+							arc.style('fill', color);						
+						}
+					}
+				}		
+			});
 		}
 
 		function collide(node) {
@@ -530,8 +585,6 @@ app.main = (function(){
 		  };
 		}
 
-		setup();
-
 		return newGraph;
 	};	
 
@@ -543,8 +596,8 @@ app.main = (function(){
 
 	return {
 		init: init,
-		selected: selected,
-		updateGraph: updateGraph
+		// selected: selected,
+		// updateGraph: updateGraph
 	};
 })();
 
