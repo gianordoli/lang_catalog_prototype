@@ -5,7 +5,7 @@
 * ~~Prevent nodes from getting stuck outside~~
 * ~~Map arc grayscale to connectivity~~
 * ~~Draw invisible links from parent~~
-* Tooltip
+* ~~Tooltip~~
 * Send to Lang
 
 
