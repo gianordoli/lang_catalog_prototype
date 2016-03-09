@@ -29,7 +29,7 @@ app.main = (function(){
 		});
 	};
 
-	var loadCourses = function(pathOfStudy, callback){
+	var loadCourses = function(pathsOfStudy, callback){
 		
 		console.log('loadCourses');
 
@@ -37,24 +37,92 @@ app.main = (function(){
 			if (error) return console.warn(error);
 			// console.log('Loaded courses:');
 			// console.log(data);
-			displayChart(pathOfStudy, data);
+			displayChart(pathsOfStudy, data);
 		});
 	};	
 
-	var displayChart = function(pathOfStudy, courses){
+	var displayChart = function(pathsOfStudy, courses){
 
 		console.log('displayChart');
-		console.log(pathOfStudy);
+		console.log(pathsOfStudy);
 		console.log(courses);
 	    
-	    var width  = window.innerWidth;
-	    var height = window.innerHeight;
+        var margin = {top: 100, right: 100, bottom: 100, left: 300};
+        var width  = window.innerWidth - margin.left - margin.right;
+        var height = window.innerHeight - margin.top - margin.bottom;
 
-		svg = d3.select("body")
+	    var xScale = d3.scale.ordinal()	    
+	    	.rangeRoundBands([0, width])
+	    	.domain(pathsOfStudy.map(function(obj){
+	    		return obj.path_of_study;
+	    	}))	    	
+	    	;
+
+	    var yScale = d3.scale.ordinal()
+	    	.rangeRoundBands([0, height])
+	    	.domain(courses.map(function(obj){
+	    		return obj.title;
+	    	}))	    	
+	    	;
+
+        var xAxis = d3.svg.axis()
+			.scale(xScale)
+			.orient("bottom")
+			.tickFormat(d3.format("g"))
+			;
+
+        var yAxis = d3.svg.axis()
+			.scale(yScale)
+			.orient("left")
+			;
+
+		var svg = d3.select("body")
             .append("svg")
             .attr("width", window.innerWidth)
             .attr("height", window.innerHeight)
             ;
+
+        var chart = svg.append("g")
+			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+   //      chart.append("g")
+			// .attr("class", "x axis")
+			// .attr("transform", "translate(0," + height + ")")
+			// .call(xAxis)
+   //         ;
+
+   //      chart.append("g")
+			// .attr("class", "y axis")                
+			// .call(yAxis)
+			// ;
+
+		var course = chart.selectAll('g')
+			.data(courses)
+			.enter()
+			.append('g')
+			.attr('x', function(d, i){
+				console.log(d);
+			})
+		    .attr("transform", function(d, i) {
+		    	return "translate(0, "+yScale(d.title)+")";
+		    });
+			;
+
+		var squares = course.selectAll('rect')
+			.data(function(d){
+				// console.log(d);
+				return d.path_of_study;
+			})
+			.enter()
+			.append('rect')
+			.attr('x', function(d, i){
+				console.log(d);
+				return xScale(d);
+				// return i* 10;
+			})
+			.attr("width", xScale.rangeBand())
+			.attr('height', yScale.rangeBand())
+			;
 
 
 	}
