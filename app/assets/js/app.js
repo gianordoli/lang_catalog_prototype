@@ -302,6 +302,15 @@ app.main = (function(){
 
 
 		/*---------- PRIVATE ---------*/
+		var tip = d3.tip()
+		  .attr('class', 'd3-tip')
+		  .offset([-10, 0])
+		  .html(function(d) {
+		  	return d.title;
+		  })
+		  ;
+
+
         var addIdToNode = function(_obj){
         	var obj = _obj;
         	obj.id = obj.isAnchor ? obj.path_of_study : obj.course_number;
@@ -429,7 +438,9 @@ app.main = (function(){
 				;
 			coursesChart = svg.append("g")
 				.attr('id', 'courses-chart')		
-				;				
+				;
+
+			svg.call(tip);
 
 			// Adding anchors to nodes
 			for(var i = 0; i < anchors.length; i++){
@@ -477,6 +488,8 @@ app.main = (function(){
 			    	// newGraph.removeNode(d.id);
 			    	console.log(d);
 			    })
+				.on('mouseover', tip.show)
+				.on('mouseout', tip.hide)			    
 	      		// .each(function(d, i){	
 	      		// 	if(!d.isAnchor){
 	      		// 		// Let's make nodes show up somewhere inside the donut
@@ -488,7 +501,7 @@ app.main = (function(){
 		      	// 		d.px = iniX;
 		      	// 		d.py = iniY;
 	      		// 	}
-	      		// })			    
+	      		// })
 			    ;
 
 			nodeSelection.exit()
