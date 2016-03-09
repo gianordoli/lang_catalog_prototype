@@ -8,10 +8,15 @@ body{
 	font-family: Helvetica, Arial, sans-serif;
 	/*font-size: 9;*/
 }
-
+.axis path{
+	display: none;
+}
 .x.axis text{
-  font-size: 9;
+  font-size: 12px;
 }
 .y.axis text{
-  font-size: 9;
+  font-size: 9px;
+}
+.y.axis tspan{
+  font-weight: bold;
 }
