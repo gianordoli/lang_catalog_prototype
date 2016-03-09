@@ -63,7 +63,7 @@ app.main = (function(){
 		console.log(pathsOfStudy);
 		console.log(courses);
 	    
-        var margin = {top: 50, right: 300, bottom: 100, left: 300};
+        var margin = {top: 300, right: 300, bottom: 300, left: 300};
         var width  = window.innerWidth - margin.left - margin.right;
         var height = window.innerHeight*4 - margin.top - margin.bottom;
 
@@ -108,7 +108,18 @@ app.main = (function(){
 			    .attr("y", 0)
 			    .attr("x", 9)
 			    .attr("dy", ".35em")
-			    .attr("transform", "rotate(90)")
+			    .attr("transform", "rotate(-90)")
+			    .style("text-anchor", "end")
+           ;
+
+        chart.append("g")
+			.attr("class", "x axis")
+			.call(xAxis)
+				.selectAll("text")
+			    .attr("y", 0)
+			    .attr("x", 9)
+			    .attr("dy", ".35em")
+			    .attr("transform", "rotate(-90)")
 			    .style("text-anchor", "start")
            ;
 
