@@ -129,7 +129,7 @@ app.main = (function(){
 			    .attr("xlink:href",	function(d, i){
 			    	return '#arc_' + i;
 			    })
-			    .attr("startOffset", 35)
+			    // .attr("startOffset", 35)
 			    ;
 
 				// <tspan> 1stLine
@@ -160,9 +160,8 @@ app.main = (function(){
 							.each(function(d){
 								var secondLineWidth = this.getComputedTextLength();
 								d3.select(this)
-									// .attr("dx", -(firstLineWidth + secondLineWidth)/2)	// CENTERED TEXT
-									.attr("dx", -(firstLineWidth + secondLineWidth)/1.7)	// CENTERED TEXT
-									// .attr("dx", -firstLineWidth*1.1)
+									// .attr("dx", -(firstLineWidth + secondLineWidth)/1.7)	// CENTERED TEXT
+									.attr("dx", -firstLineWidth)
 									.attr("dy", arcWeight/3)
 									;
 							})

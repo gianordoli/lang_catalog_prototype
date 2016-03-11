@@ -1,17 +1,17 @@
+@font-face {
+  font-family: 'neue';
+  src: url('assets/fonts/neue_bold.otf'); /* IE9 Compat Modes */
+}
+
 * {
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box;    /* Firefox, other Gecko */
   box-sizing: border-box;         /* Opera/IE 8+ */;
 }
 
-@font-face {
-    font-family: neue;
-    src: url(/assets/fonts/neue_bold.otf);
-}
-
 body{
 	font-family: Helvetica, Arial, sans-serif;
-	font-family: neue;
+	/*font-family: 'neue';*/
 	font-size: 12;
 }
 
@@ -39,8 +39,8 @@ g#path-of-study-chart g.path-of-study path {
 
 g#path-of-study-chart g.path-of-study text {
   font-size: 9px;
-  font-family: neue;
-  text-anchor: middle;
+  /*font-family: 'neue';*/
+  /*text-anchor: middle;*/
   pointer-events: none;
 }
 
