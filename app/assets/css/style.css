@@ -15,20 +15,28 @@ body{
 	font-size: 12px;
 }
 
+div#left-panel{
+  position: absolute;
+  top: 160px;
+  left: 40px;
+  width: 245px;
+  height: calc(100% - 210px);
+  overflow-y: auto;
+}
+
 select#term-select{
   position: absolute;
   top: 50px;
-  right: 280px;  
+  right: 285px;  
   width: 100px;
 }
 
 div#right-panel{
   position: absolute;
   top: 50px;
-  right: 35px;
+  right: 40px;
   width: 245px;
   height: calc(100% - 100px);
-  background-color: red;
   display: table;
 }
 
@@ -54,7 +62,6 @@ div#right-panel{
     div#right-panel div.row ul#courses-list{
       overflow-y: auto;
       height: 100%;
-      background-color: green;
     }
 
 /*svg text{
