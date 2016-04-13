@@ -12,8 +12,50 @@
 body{
 	font-family: Helvetica, Arial, sans-serif;
 	/*font-family: 'neue';*/
-	font-size: 12;
+	font-size: 12px;
 }
+
+select#term-select{
+  position: absolute;
+  top: 50px;
+  right: 280px;  
+  width: 100px;
+}
+
+div#right-panel{
+  position: absolute;
+  top: 50px;
+  right: 35px;
+  width: 245px;
+  height: calc(100% - 100px);
+  background-color: red;
+  display: table;
+}
+
+  div#right-panel div.row{
+    display: table-row;
+  }
+
+    div#right-panel div.row.up{
+      height: 0;
+    }
+
+      /* Search Box*/
+      div#right-panel div.row.up input#search-box{
+        width: 100%;
+        display: none;  
+      } 
+
+      div#right-panel div.row.up input#search-box.visible{
+        display: block;
+      } 
+
+    /* Courses List */
+    div#right-panel div.row ul#courses-list{
+      overflow-y: auto;
+      height: 100%;
+      background-color: green;
+    }
 
 /*svg text{
 	font-family: Helvetica, Arial, sans-serif;

@@ -223,6 +223,55 @@ app.main = (function(){
 		});
 	};
 
+	function updateList(){
+		
+		// Paths of Study
+		var ulPathsOfStudy = d3.select('#paths-of-study-list');
+		
+		var pathOfStudy = ulPathsOfStudy.selectAll('li')
+			.data(selected)
+			;
+
+		var pathOfStudyEnter = pathOfStudy
+			.enter()
+			.append('li')
+			.text(function(d, i){
+				console.log(d);
+				return d;
+			})
+			;
+
+		var pathOfStudyExit = pathOfStudy
+			.exit()
+			.remove()
+			;		
+
+		// Search Box
+		console.log(prevFilter.length > 0);
+		d3.select('#search-box').classed("visible", prevFilter.length > 0);
+
+		// Courses
+		var ulCourses = d3.select('#courses-list');
+		
+		var course = ulCourses.selectAll('li')
+			.data(prevFilter)
+			;
+
+		var courseEnter = course
+			.enter()
+			.append('li')
+			.text(function(d, i){
+				return d.title;
+			})
+			;
+
+		var courseExit = course
+			.exit()
+			.remove()
+			;
+
+	}
+
 	// The donut 'communicates' with the graph through these 2 functions
 	function drawGraph(){
 
@@ -254,13 +303,21 @@ app.main = (function(){
 
 	function updateGraph(){
 		
+		// This filter will loop through each course...
 		var newFilter = _.filter(courses, function(o) {
 			var nMatches = 0;
+			// ..., loop through each selected path of study and...
 			for(var i = 0; i < selected.length; i++){
+				// ...for each match found within
+				// selected[i] x o.path_of_study
 				if(o.path_of_study.indexOf(selected[i]) > -1){
+					// Add one to this counter.
 					nMatches ++;
 				}
 			}
+			// If by the end the course has as many matches as selected paths of study
+			// AND there is something selected
+			// THEN include it into our new filter
 			return nMatches === selected.length && selected.length > 0;
 		});
 		// console.log('newFilter: ' + newFilter.length);
@@ -287,7 +344,8 @@ app.main = (function(){
 
 		prevFilter = newFilter;
 
-		graph.update();
+		graph.update();	// update graph
+		updateList();	// update list
 	}	
 
 	// (list of courses, position of arcs, selected pathOfStudy)
