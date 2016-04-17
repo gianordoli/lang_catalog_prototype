@@ -246,12 +246,14 @@ app.main = (function(){
 			.remove()
 			;		
 
-		// Search Box
-		console.log(prevFilter.length > 0);
+		// Search Box		
 		d3.select('#search-box').classed("visible", prevFilter.length > 0);
-
+		// console.log(prevFilter.length > 0);
+		// console.log(d3.select('#search-box').classed());
+		
 		// Courses
 		var ulCourses = d3.select('#courses-list');
+		console.log(prevFilter);
 		
 		var course = ulCourses.selectAll('li')
 			.data(prevFilter)
@@ -260,6 +262,12 @@ app.main = (function(){
 		var courseEnter = course
 			.enter()
 			.append('li')
+			;
+
+		var courseUpdate = course
+			// .attr('id', function(d, i){
+			// 	return d.title.split(' ').join('_');
+			// })
 			.text(function(d, i){
 				return d.title;
 			})
@@ -556,7 +564,15 @@ app.main = (function(){
 					d3.select('#course-description')
 						// .text(d.description)
 						.text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non bibendum sem, sit amet blandit justo. Quisque volutpat viverra nulla, sed vehicula purus auctor a. Nulla auctor luctus euismod. Proin sem arcu, molestie id sapien vitae, mollis consectetur lorem. Donec vulputate lacinia vulputate. Sed rhoncus lectus at sem accumsan, a vulputate metus mattis. Aenean vitae dictum nisl. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean ut lacus a elit lacinia gravida non nec nisl. In vel nisl nec enim imperdiet pretium dictum non elit. Proin scelerisque a lectus a hendrerit. Curabitur sit amet tempus turpis, vel malesuada augue. Maecenas dapibus arcu id est interdum, posuere fringilla augue sodales.");
-						;					
+						;
+
+					// var ulCourses = d3.select('#courses-list');
+		
+					// var course = ulCourses.selectAll('li')
+					// 	.classed('mouseover', function(_d, _i){
+					// 		return _i === i;
+					// 	})
+					// 	;
 				})
 				.on('mouseout', function(){
 					tip.hide();

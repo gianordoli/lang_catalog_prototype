@@ -37,32 +37,42 @@ div#right-panel{
   right: 40px;
   width: 245px;
   height: calc(100% - 100px);
-  display: table;
+  
+  display: flex;
+  flex-direction: column;
 }
 
-  div#right-panel div.row{
-    display: table-row;
-  }
-
-    div#right-panel div.row.up{
-      height: 0;
+    div#right-panel div.up{
+      background: green;
     }
 
       /* Search Box*/
-      div#right-panel div.row.up input#search-box{
+      div#right-panel div.up input#search-box{
         width: 100%;
-        display: none;  
+        visibility: hidden;
       } 
 
-      div#right-panel div.row.up input#search-box.visible{
-        display: block;
+      div#right-panel div.up input#search-box.visible{
+        visibility: visible;
       } 
 
     /* Courses List */
-    div#right-panel div.row ul#courses-list{
+    div#right-panel div.down{
+      flex-grow: 1;
       overflow-y: auto;
-      height: 100%;
+      background: red;
     }
+
+    div#right-panel div ul#courses-list{
+      /*display: table-cell;*/
+      /*height: 100%;
+      overflow-y: auto; */
+      /*background-color: red;*/
+    }
+      div#right-panel div ul#courses-list li.mouseover{
+        color: white;
+        background-color: black;
+      }
 
 /*svg text{
 	font-family: Helvetica, Arial, sans-serif;
@@ -70,7 +80,7 @@ div#right-panel{
 
 /* Path of Study */
 g#path-of-study-chart g.path-of-study path {
-  stroke: #fff;
+  /*stroke: #fff;*/
   stroke-width: 2px;
   /*fill: #E6E6E6;*/
   fill: white;
