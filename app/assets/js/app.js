@@ -13,7 +13,8 @@ app.main = (function(){
     var anchors		= [];	// Arc coordinates; used as 'anchors' on the network graph;
     					 	// Will compute after drawing them.
 
-	var graph;	// Network graph with courses;
+	var graph;				// Network graph with courses;
+	var searchEngineIndex;
 
 	/*------------------ CATEGORIES -------------------*/
 	// Categories change from term to term. Think about how to handle arc updates
@@ -223,7 +224,78 @@ app.main = (function(){
 		});
 	};
 
-	function updateList(){
+	function createSearchEngine(){
+		searchEngineIndex = lunr(function(){
+		    // boost increases the importance of words found in this field
+		    this.field('title', {boost: 10});
+		    // this.field('description', {boost: 2});
+		    // the id
+		    this.ref('course_number');
+		});
+	}
+
+	function addSearchListener(){
+		
+		var searchBox = document.getElementById('search-box');
+		searchBox.addEventListener('keyup', function(e){
+			if(e.keyCode === 13){
+				search();
+			}
+		});
+
+		var searchButton = document.getElementById('search-button');
+		searchButton.addEventListener('mouseup', function(){
+			search();
+		});
+
+		function search(){
+			var query = searchBox.value;
+			// console.log(query);
+			var results = searchEngineIndex.search(query);
+			console.log(results);
+			highlightResults(results);
+		}
+	}
+
+	function highlightResults(results){
+		// console.log('Called highlightResults');
+		var opacityScale = d3.scale.linear()
+			.domain([0, 1])
+			.range([0, 0.5])
+			;
+
+		var ulCourses = d3.select('#courses-list');
+		// Loop through each course on the list...
+		ulCourses.selectAll('li')
+			.each(function(d, i){
+				var thisCourse = d3.select(this);
+				// First, let's clean up any previous formatting
+				thisCourse.style('background-color', null);
+
+				// Now loop through each search result
+				for(var j = 0; j < results.length; j++){
+					// If course's and result's id matches...
+					if(d['course_number'] === results[j]['ref']){
+						// Highlight course based on its resulting score
+						d3.select(this)
+							.style('background-color', 'rgba(232, 46, 33, '+opacityScale(results[j]['score'])+')')
+							;
+					}
+				}
+			});
+	}
+
+	function updateSearchEngine(){
+		for(var i = 0; i < prevFilter.length; i++){
+		    searchEngineIndex.add({
+		    	title: prevFilter[i]['title'],
+		        course_number: prevFilter[i]['course_number']
+		    });			
+		}
+		// console.log(searchEngineIndex);
+	}
+
+	function updateCoursesList(){
 		
 		// Paths of Study
 		var ulPathsOfStudy = d3.select('#paths-of-study-list');
@@ -236,7 +308,6 @@ app.main = (function(){
 			.enter()
 			.append('li')
 			.text(function(d, i){
-				console.log(d);
 				return d;
 			})
 			;
@@ -247,13 +318,13 @@ app.main = (function(){
 			;		
 
 		// Search Box		
-		d3.select('#search-box').classed("visible", prevFilter.length > 0);
+		d3.select('#search-container').classed("visible", prevFilter.length > 0);
 		// console.log(prevFilter.length > 0);
 		// console.log(d3.select('#search-box').classed());
 		
 		// Courses
 		var ulCourses = d3.select('#courses-list');
-		console.log(prevFilter);
+		// console.log(prevFilter);
 		
 		var courseSelection = ulCourses.selectAll('li')
 			.data(prevFilter)
@@ -266,7 +337,7 @@ app.main = (function(){
 
 		var courseUpdate = courseSelection
 			.attr('id', function(d, i){
-				return 'course' + d.id;
+				return 'course_' + d.course_number;
 			})
 			.text(function(d, i){
 				return d.title;
@@ -280,7 +351,9 @@ app.main = (function(){
 
 	}
 
-	// The donut 'communicates' with the graph through these 2 functions
+	// The donut 'communicates' with the graph through these 2 functions:
+	// drawGraph and updateGraph
+	// updateGraph also updates the list on the right side and the search
 	function drawGraph(){
 
 		console.log('drawGraph()');
@@ -307,7 +380,10 @@ app.main = (function(){
 				}
 			}, 1000);
 		}
-	};
+
+		createSearchEngine();
+		addSearchListener();
+	}
 
 	function updateGraph(){
 		
@@ -352,9 +428,10 @@ app.main = (function(){
 
 		prevFilter = newFilter;
 
-		graph.update();	// update graph
-		updateList();	// update list
-	}	
+		graph.update();			// update graph
+		updateCoursesList();	// update courses list on the right-side panel
+		updateSearchEngine();
+	}
 
 	// (list of courses, position of arcs, selected pathOfStudy)
 	function myGraph(){
@@ -576,7 +653,7 @@ app.main = (function(){
 						;
 
 					// Highlight course name on right-side list
-					d3.select('li#course'+d.id)
+					d3.select('li#course_'+d.course_number)
 						.classed('mouseover', true)
 						;
 				})
@@ -585,7 +662,7 @@ app.main = (function(){
 					d3.select('#course-description')
 						.text('')
 						;
-					d3.select('li#course'+d.id)
+					d3.select('li#course_'+d.course_number)
 						.classed('mouseover', false)
 						;						
 				})			    
