@@ -43,24 +43,46 @@ div#right-panel{
 }
 
     div#right-panel div.up{
-      background: green;
+      /*background: green;*/
     }
 
       /* Search Box*/
-      div#right-panel div.up input#search-box{
+      div#right-panel div.up div#search-container{
         width: 100%;
         visibility: hidden;
-      } 
+        border: 2px solid #E6E6E6;
+        height: 24px;
+      }
 
-      div#right-panel div.up input#search-box.visible{
+      div#right-panel div.up div#search-container.visible{
         visibility: visible;
-      } 
+      }
+
+        div#right-panel div.up div#search-container input#search-box{
+          border: 0;  
+          width: calc(100% - 20px);
+          height: 20px;
+        } 
+
+        div#right-panel div.up div#search-container input#search-button{
+          display: inline-block;
+          width: 20px;
+          height: 20px;
+          border: 0;
+          background-color: white;
+          background-image: url('../images/search_button.svg');
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: 14px 14px;
+          float: right;
+          cursor: pointer;
+        } 
 
     /* Courses List */
     div#right-panel div.down{
       flex-grow: 1;
       overflow-y: auto;
-      background: red;
+      /*background: red;*/
     }
 
     div#right-panel div ul#courses-list{
@@ -69,10 +91,15 @@ div#right-panel{
       overflow-y: auto; */
       /*background-color: red;*/
     }
+
       div#right-panel div ul#courses-list li.mouseover{
         color: white;
         background-color: black;
       }
+
+      div#right-panel div ul#courses-list li.search-result{
+        background-color: rgba(0, 0, 0, 20);
+      }      
 
 /*svg text{
 	font-family: Helvetica, Arial, sans-serif;
