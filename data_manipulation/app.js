@@ -53,8 +53,18 @@ for(var i = 0; i < filteredData.length; i++){
 
 // console.log(courses);
 
-// 3. Replacing wrong path of study
-var replacementList = jsonfile.readFileSync('original_data/replacement_list.json');
+// 3. Ignore courses that are not based on particular curriculum
+var stopList = ['Research Prac 2: Ind Sr. Proj', 'Independent Study', 'Collaborative Senior Project', 'Senior Work'];
+for(var courseNumber in courses){
+	if(stopList.indexOf(courses[courseNumber]['title']) > -1){
+		// console.log(courses[courseNumber]);
+		delete courses[courseNumber]
+	}
+}
+
+
+// 4. Replacing wrong path of study
+var replacementList = jsonfile.readFileSync('original_data/lang_catalog_replacement_list.json');
 // console.log(replaceList);
 
 // Loop through all courses
@@ -64,19 +74,23 @@ for(var courseNumber in courses){
 		var index = courses[courseNumber]['path_of_study'].indexOf(key);
 		// Is there a course to be replaced?
 		if(index > -1){
-			// If the replacement hasn't been added yet, add it
-			if(courses[courseNumber]['path_of_study'].indexOf(replacementList[key]) < 0){
-				courses[courseNumber]['path_of_study'].splice(index, 1, replacementList[key]);
-			// Otherwise, just remove the wrong path_of_study
-			}else{
-				courses[courseNumber]['path_of_study'].splice(index, 1);
+			// The replacement is an Array, so...
+			for(var i = 0; i < replacementList[key].length; i++){
+				
+				// If the replacement hasn't been added yet, add it
+				if(courses[courseNumber]['path_of_study'].indexOf(replacementList[key][i]) < 0){
+					courses[courseNumber]['path_of_study'].splice(index, 1, replacementList[key][i]);
+				// Otherwise, just remove the wrong path_of_study
+				}else{
+					courses[courseNumber]['path_of_study'].splice(index, 1);
+				}
 			}
 		}
 	}
 }
 // jsonfile.writeFileSync('exported_data/lang_courses_fall_2015.json', courses);
 
-// 4. Convert courses object to array
+// 5. Convert courses object to array
 var coursesArray = [];
 for(var courseNumber in courses){
 	var newObj = courses[courseNumber]; 
@@ -88,7 +102,7 @@ jsonfile.writeFileSync('exported_data/lang_courses_fall_2015.json', coursesArray
 
 
 /*---------- CATEGORIES ----------*/
-// 5. Generate categories file
+// 6. Generate categories file
 var pathsOfStudy = [];
 for(var courseNumber in courses){
 	for(var i = 0; i < courses[courseNumber]['path_of_study'].length; i++){

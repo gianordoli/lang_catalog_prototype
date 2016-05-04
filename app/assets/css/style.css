@@ -15,8 +15,16 @@ body{
 	font-size: 12px;
 }
 
+div#logo{
+  position: absolute;
+  z-index: 10;  
+  top: 0;
+  left: 0;
+}
+
 div#left-panel{
   position: absolute;
+  z-index: 20;
   top: 160px;
   left: 40px;
   width: 245px;
@@ -26,13 +34,15 @@ div#left-panel{
 
 select#term-select{
   position: absolute;
+  z-index: 30;
   top: 50px;
-  right: 285px;  
+  right: 285px;
   width: 100px;
 }
 
 div#right-panel{
   position: absolute;
+  z-index: 40;
   top: 50px;
   right: 40px;
   width: 245px;
@@ -100,6 +110,13 @@ div#right-panel{
       div#right-panel div ul#courses-list li.search-result{
         background-color: rgba(0, 0, 0, 20);
       }      
+
+svg{
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
 
 /*svg text{
 	font-family: Helvetica, Arial, sans-serif;
