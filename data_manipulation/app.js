@@ -19,11 +19,11 @@ var courses = {};
 
 for(var i = 0; i < filteredData.length; i++){
 
-	var courseNumber = filteredData[i]['CourseNumber'];
-	// console.log(courseNumber);
+	var SubjectCodeCourseNumber = filteredData[i]['SubjectCode'] + " " + filteredData[i]['CourseNumber'];
+	// console.log(SubjectCodeCourseNumber);
 	
 	// If the object doesn't have this class yet
-	if(!courses.hasOwnProperty(courseNumber)){
+	if(!courses.hasOwnProperty(SubjectCodeCourseNumber)){
  
 		var newCourse = {
 			title: filteredData[i]['CourseTitle'],
@@ -31,22 +31,22 @@ for(var i = 0; i < filteredData.length; i++){
 		}		
 		// console.log(newCourse);
 
-		// Add new course to courses obj; the courseNumber will be its key
-		courses[courseNumber] = newCourse;
+		// Add new course to courses obj; the SubjectCodeCourseNumber will be its key
+		courses[SubjectCodeCourseNumber] = newCourse;
 	}
 
 	// If the course has already been added,...
 	else{
 		
 		var newPathOfStudy = filteredData[i]['PathofStudy'];
-		// console.log(courses[courseNumber]['path_of_study']);
+		// console.log(courses[SubjectCodeCourseNumber]['path_of_study']);
 		// console.log('\t' + newPathOfStudy);
 
 		// ... we need to check if this path of study is new
-		if(courses[courseNumber]['path_of_study'].indexOf(newPathOfStudy) < 0){
+		if(courses[SubjectCodeCourseNumber]['path_of_study'].indexOf(newPathOfStudy) < 0){
 			
 			// If so, add it to the course
-			courses[courseNumber]['path_of_study'].push(newPathOfStudy);
+			courses[SubjectCodeCourseNumber]['path_of_study'].push(newPathOfStudy);
 		}
 	}
 }
@@ -55,10 +55,10 @@ for(var i = 0; i < filteredData.length; i++){
 
 // 3. Ignore courses that are not based on particular curriculum
 var stopList = ['Research Prac 2: Ind Sr. Proj', 'Independent Study', 'Collaborative Senior Project', 'Senior Work'];
-for(var courseNumber in courses){
-	if(stopList.indexOf(courses[courseNumber]['title']) > -1){
-		// console.log(courses[courseNumber]);
-		delete courses[courseNumber]
+for(var SubjectCodeCourseNumber in courses){
+	if(stopList.indexOf(courses[SubjectCodeCourseNumber]['title']) > -1){
+		// console.log(courses[SubjectCodeCourseNumber]);
+		delete courses[SubjectCodeCourseNumber]
 	}
 }
 
@@ -68,21 +68,21 @@ var replacementList = jsonfile.readFileSync('original_data/lang_catalog_replacem
 // console.log(replaceList);
 
 // Loop through all courses
-for(var courseNumber in courses){
+for(var SubjectCodeCourseNumber in courses){
 	// Loop through replacement list
 	for(var key in replacementList){
-		var index = courses[courseNumber]['path_of_study'].indexOf(key);
+		var index = courses[SubjectCodeCourseNumber]['path_of_study'].indexOf(key);
 		// Is there a course to be replaced?
 		if(index > -1){
 			// The replacement is an Array, so...
 			for(var i = 0; i < replacementList[key].length; i++){
 				
 				// If the replacement hasn't been added yet, add it
-				if(courses[courseNumber]['path_of_study'].indexOf(replacementList[key][i]) < 0){
-					courses[courseNumber]['path_of_study'].splice(index, 1, replacementList[key][i]);
+				if(courses[SubjectCodeCourseNumber]['path_of_study'].indexOf(replacementList[key][i]) < 0){
+					courses[SubjectCodeCourseNumber]['path_of_study'].splice(index, 1, replacementList[key][i]);
 				// Otherwise, just remove the wrong path_of_study
 				}else{
-					courses[courseNumber]['path_of_study'].splice(index, 1);
+					courses[SubjectCodeCourseNumber]['path_of_study'].splice(index, 1);
 				}
 			}
 		}
@@ -92,9 +92,9 @@ for(var courseNumber in courses){
 
 // 5. Convert courses object to array
 var coursesArray = [];
-for(var courseNumber in courses){
-	var newObj = courses[courseNumber]; 
-	newObj['course_number'] = courseNumber;
+for(var SubjectCodeCourseNumber in courses){
+	var newObj = courses[SubjectCodeCourseNumber]; 
+	newObj['subject_code_course_number'] = SubjectCodeCourseNumber;
 	coursesArray.push(newObj);
 }
 // console.log(coursesArray);
@@ -104,10 +104,10 @@ jsonfile.writeFileSync('exported_data/lang_courses_fall_2015.json', coursesArray
 /*---------- CATEGORIES ----------*/
 // 6. Generate categories file
 var pathsOfStudy = [];
-for(var courseNumber in courses){
-	for(var i = 0; i < courses[courseNumber]['path_of_study'].length; i++){
-		if(pathsOfStudy.indexOf(courses[courseNumber]['path_of_study'][i]) < 0){
-			pathsOfStudy.push(courses[courseNumber]['path_of_study'][i]);
+for(var SubjectCodeCourseNumber in courses){
+	for(var i = 0; i < courses[SubjectCodeCourseNumber]['path_of_study'].length; i++){
+		if(pathsOfStudy.indexOf(courses[SubjectCodeCourseNumber]['path_of_study'][i]) < 0){
+			pathsOfStudy.push(courses[SubjectCodeCourseNumber]['path_of_study'][i]);
 		}
 	}
 }
