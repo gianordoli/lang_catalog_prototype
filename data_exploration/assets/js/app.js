@@ -65,7 +65,7 @@ app.main = (function(){
 	    
         var margin = {top: 300, right: 300, bottom: 300, left: 300};
         var width  = window.innerWidth - margin.left - margin.right;
-        var height = window.innerHeight*4 - margin.top - margin.bottom;
+        var height = window.innerHeight*5 - margin.top - margin.bottom;
 
 	    var xScale = d3.scale.ordinal()	    
 	    	.rangeRoundBands([0, width], 0.5)
@@ -132,6 +132,7 @@ app.main = (function(){
 			    // .text('yo!')
 			    .text(function(d, i){
 			    	return courses[i]['path_of_study'].length;
+			    	// return courses[i]['subject_code_course_number'];
 			    })
 			;
 

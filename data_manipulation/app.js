@@ -1,14 +1,18 @@
 var jsonfile = require('jsonfile');
 
-var originalData = jsonfile.readFileSync('original_data/Lang-Courses-2012_2015-Path_of_Study-xls.json');
+// var originalData = jsonfile.readFileSync('original_data/Lang-Courses-2012_2015-Path_of_Study-xls.json');
+// var originalData = jsonfile.readFileSync('original_data/Lang-Courses-2012_2016-Path_of_Study-txt.json');
+var originalData = jsonfile.readFileSync('original_data/Lang-Courses-2015-Path_of_Study-txt.json');
 // console.log(originalData);
 
 // 1. Filtering by Fall 2015
 var filteredData = [];
 for(var i = 0; i < originalData.length; i++){
-	var term = originalData[i]['TermDesc'];
+	// var term = originalData[i]['TermDesc'];
+	var term = originalData[i]['TermCode'];
 	// console.log(term);
-	if(term === 'Fall 2015'){
+	// if(term === 'Fall 2015'){
+	if(term === 'Fall 2015' || term === 'Spring 2015' || term === 'Summer 2015'){
 		filteredData.push(originalData[i]);
 	}
 }
@@ -54,7 +58,7 @@ for(var i = 0; i < filteredData.length; i++){
 // console.log(courses);
 
 // 3. Ignore courses that are not based on particular curriculum
-var stopList = ['Research Prac 2: Ind Sr. Proj', 'Independent Study', 'Collaborative Senior Project', 'Senior Work'];
+var stopList = ['Research Prac 2: Ind Sr. Proj', 'Research Prac 2: Coll Sr. Proj', 'Honors Thesis', 'Ind Senior Project', 'Ind Senior Prject', 'Ind Senior Work', 'Independent Study', 'Collaborative Senior Project', 'Senior Work', 'First Year Workshop', 'Collaborative Senior Pro', 'Ind Senior Work', 'Ind Senior Prject'];
 for(var SubjectCodeCourseNumber in courses){
 	if(stopList.indexOf(courses[SubjectCodeCourseNumber]['title']) > -1){
 		// console.log(courses[SubjectCodeCourseNumber]);
@@ -98,7 +102,8 @@ for(var SubjectCodeCourseNumber in courses){
 	coursesArray.push(newObj);
 }
 // console.log(coursesArray);
-jsonfile.writeFileSync('exported_data/lang_courses_fall_2015.json', coursesArray);
+// jsonfile.writeFileSync('exported_data/lang_courses_fall_2015.json', coursesArray);
+jsonfile.writeFileSync('exported_data/lang_courses_2015.json', coursesArray);
 
 
 /*---------- CATEGORIES ----------*/
@@ -112,4 +117,5 @@ for(var SubjectCodeCourseNumber in courses){
 	}
 }
 // console.log(pathsOfStudy);
-jsonfile.writeFileSync('exported_data/lang_paths_of_study_fall_2015.json', pathsOfStudy);
+// jsonfile.writeFileSync('exported_data/lang_paths_of_study_fall_2015.json', pathsOfStudy);
+jsonfile.writeFileSync('exported_data/lang_paths_of_study_2015.json', pathsOfStudy);
