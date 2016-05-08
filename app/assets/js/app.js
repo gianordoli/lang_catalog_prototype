@@ -20,7 +20,7 @@ app.main = (function(){
 	// Categories change from term to term. Think about how to handle arc updates
 	var loadPathsOfStudy = function(){
 		// d3.csv('assets/data/fall_2015_path_of_study.tsv', function(error, data) {
-		d3.json('assets/data/lang_paths_of_study_fall_2015.json', function(error, data) {			
+		d3.json('assets/data/fall_2015/lang_paths_of_study_fall_2015.json', function(error, data) {			
 			if (error) return console.warn(error);
 			// console.log('Loaded categories:');
 			// console.log(data);
@@ -216,7 +216,7 @@ app.main = (function(){
 
 	/*-------------------- COURSES --------------------*/
 	var loadCourses = function(){
-		d3.json('assets/data/lang_courses_fall_2015.json', function(error, data) {
+		d3.json('assets/data/fall_2015/lang_courses_fall_2015.json', function(error, data) {
 			if (error) return console.warn(error);
 			// console.log('Loaded courses:');
 			// console.log(data);
