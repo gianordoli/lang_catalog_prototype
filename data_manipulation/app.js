@@ -16,7 +16,13 @@ for(var i = 0; i < originalData.length; i++){
 		filteredData.push(originalData[i]);
 	}
 }
-// console.log(filteredData.length);
+console.log(filteredData.length);
+
+for(var i = 0; i < filteredData.length; i++){
+	if(filteredData[i]['CourseNumber'] === 2030){
+		console.log(filteredData[i]);
+	}
+}
 
 // 2. Aggregate sessions into courses
 var courses = {};
@@ -32,7 +38,7 @@ for(var i = 0; i < filteredData.length; i++){
 		var newCourse = {
 			title: filteredData[i]['CourseTitle'],
 			path_of_study: [filteredData[i]['PathofStudy']]	// Creating an array here
-		}		
+		};
 		// console.log(newCourse);
 
 		// Add new course to courses obj; the SubjectCodeCourseNumber will be its key
@@ -54,7 +60,7 @@ for(var i = 0; i < filteredData.length; i++){
 		}
 	}
 }
-
+// console.log(courses['2030']);
 // console.log(courses);
 
 // 3. Ignore courses that are not based on particular curriculum
