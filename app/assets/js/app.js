@@ -140,9 +140,9 @@ app.main = (function(){
 					})
 					.attr("dy", function(d, i){
 						if(!d.data.hasOwnProperty('2ndLine')){
-							return - arcWeight + arcWeight/2;
+							return - arcWeight + arcWeight*0.5;
 						}else{
-							return - arcWeight + arcWeight/3;
+							return - arcWeight + arcWeight*0.25;
 						}
 					})
 				// <tspan> 2ndLine
@@ -159,11 +159,14 @@ app.main = (function(){
 									return d.data['2ndLine'];
 							})
 							.each(function(d){
-								var secondLineWidth = this.getComputedTextLength();
+								// var secondLineWidth = this.getComputedTextLength();
 								d3.select(this)
 									// .attr("dx", -(firstLineWidth + secondLineWidth)/1.7)	// CENTERED TEXT
-									.attr("dx", -firstLineWidth)
-									.attr("dy", arcWeight/3)
+									// .attr("dx", -firstLineWidth)
+									// getComputedTextLength doesn't seem to be working right for the Neue font
+									// had to add this 1.28 as a manual compensation
+									.attr("dx", -firstLineWidth*1.28)
+									.attr("dy", arcWeight*0.35)
 									;
 							})
 							;
