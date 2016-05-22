@@ -19,8 +19,8 @@ app.main = (function(){
 	/*------------------ CATEGORIES -------------------*/
 	// Categories change from term to term. Think about how to handle arc updates
 	var loadPathsOfStudy = function(){
-		// d3.json('assets/data/fall_2015/lang_paths_of_study_fall_2015.json', function(error, data) {
-		d3.json('assets/data/2015/lang_paths_of_study_2015.json', function(error, data) {						
+		d3.json('assets/data/fall_2015/lang_paths_of_study_fall_2015.json', function(error, data) {
+		// d3.json('assets/data/2015/lang_paths_of_study_2015.json', function(error, data) {						
 			if (error) return console.warn(error);
 			// console.log('Loaded categories:');
 			// console.log(data);
@@ -216,14 +216,25 @@ app.main = (function(){
 
 	/*-------------------- COURSES --------------------*/
 	var loadCourses = function(){
-		// d3.json('assets/data/fall_2015/lang_courses_fall_2015.json', function(error, data) {
-		d3.json('assets/data/2015/lang_courses_2015.json', function(error, data) {
+		d3.json('assets/data/fall_2015/lang_courses_fall_2015.json', function(error, data) {
+		// d3.json('assets/data/2015/lang_courses_2015.json', function(error, data) {
 			if (error) return console.warn(error);
 			// console.log('Loaded courses:');
 			// console.log(data);
+			console.log(data.length);
+
+			// Replace whitespaces in subject_code_course_number with underscores
+			data = replaceWhiteSpaces(data);
 			courses = data;			// Won't change unless navigating to a different term
 		});
 	};
+
+	function replaceWhiteSpaces(data){
+		for(var i = 0; i < data.length; i++){
+			data[i]['subject_code_course_number'] = data[i]['subject_code_course_number'].split(' ').join('_');
+		}
+		return data;
+	}
 
 	function createSearchEngine(){
 		searchEngineIndex = lunr(function(){
@@ -405,7 +416,7 @@ app.main = (function(){
 			// THEN include it into our new filter
 			return nMatches === selected.length && selected.length > 0;
 		});
-		// console.log('newFilter: ' + newFilter.length);
+		console.log('newFilter: ' + newFilter.length);
 		// console.log(newFilter);
 		// console.log('prevFilter: ' + prevFilter.length);
 		// console.log(prevFilter);
