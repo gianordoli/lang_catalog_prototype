@@ -65,6 +65,9 @@ select#term-select{
   right: 285px;
   width: 100px;
   background-color: white;
+  background-position: right;
+  background-image: url('../images/button_drop_down.svg');
+  background-repeat: no-repeat;
   border: 2px solid #E6E6E6;
   height: 24px; 
   -webkit-appearance: none;
@@ -115,7 +118,7 @@ div#right-panel{
           height: 20px;
           border: 0;
           background-color: white;
-          background-image: url('../images/search_button.svg');
+          background-image: url('../images/button_search.svg');
           background-repeat: no-repeat;
           background-position: center;
           background-size: 14px 14px;
