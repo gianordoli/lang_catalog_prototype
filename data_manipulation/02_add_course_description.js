@@ -30,7 +30,11 @@ for(var i = 0; i < coursesWithoutDesc.length; i++) {
 			console.log('Match ' + c);
 			c++;
 			// console.log(coursesDesc[j]['CourseDescription']);
-			course['description'].push(coursesDesc[j]['CourseDescription']);
+
+			// Is this description different than the one we already have?
+			if(course['description'].indexOf(coursesDesc[j]['CourseDescription']) < 0){
+				course['description'].push(coursesDesc[j]['CourseDescription']);	
+			}
 		}
 	}
 
@@ -38,6 +42,14 @@ for(var i = 0; i < coursesWithoutDesc.length; i++) {
 }
 
 console.log(coursesWithDesc.length);
+
+// Debug: are there courses with more than one description?
+// for(var i = 0; i < coursesWithDesc.length; i++) {
+// 	// console.log(coursesWithDesc[i]['description'].length);
+// 	if(coursesWithDesc[i]['description'].length > 1){
+// 		console.log('Duplicate');
+// 	}
+// }
 
 jsonfile.writeFileSync('exported_data/lang_courses_with_desc_fall_2015.json', coursesWithDesc);
 
