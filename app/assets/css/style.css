@@ -39,9 +39,14 @@ body{
 div#logo{
   position: absolute;
   z-index: 10;  
-  top: 0;
-  left: 0;
+  top: 20px;
+  left: 40px;
 }
+  
+  div#logo img{
+    width: 247px;
+    height: 104px;
+  }
 
 div#left-panel{
   position: absolute;
@@ -49,9 +54,28 @@ div#left-panel{
   top: 160px;
   left: 40px;
   width: 245px;
-  height: calc(100% - 210px);
+  max-height: calc(100% - 210px);
   overflow-y: auto;
+  border: 2px solid #E6E6E6;
+  padding: 12px;
+  background-color: white;
+  visibility: hidden;
 }
+
+  div#left-panel p{
+    padding: 0;
+    margin: 0;
+  }
+
+  div#left-panel p#course-title{
+    font-family: 'NeueBold';
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  div#left-panel.visible{
+    visibility: visible;
+  }
 
 select:focus,
 input:focus{

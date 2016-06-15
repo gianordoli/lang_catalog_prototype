@@ -216,7 +216,7 @@ app.main = (function(){
 		getAnchors(arcs);
 		drawGraph();
 	}
-	
+
 	/*-------------------- COURSES --------------------*/
 	var loadCourses = function(){
 		d3.json('assets/data/fall_2015/lang_courses_with_desc_fall_2015.json', function(error, data) {
@@ -663,24 +663,47 @@ app.main = (function(){
 				.on('mouseover', function(d, i){
 					tip.show(d);
 					// console.log(d)
-					d3.select('#course-description')
-						// .text(d.description)
-						.text(d['description']);
-						;
 
 					// Highlight course name on right-side list
 					d3.select('li#course_'+d.subject_code_course_number)
 						.classed('mouseover', true)
 						;
+
+					if(d['description'].length > 0){
+						d3.select('#left-panel')
+							.classed("visible", true)
+							;
+
+						d3.select('#course-title')
+							.text(d['title']);
+							;
+
+						d3.select('#course-description')
+							.text(d['description']);
+							;
+					}
+
 				})
 				.on('mouseout', function(d, i){
 					tip.hide();
-					d3.select('#course-description')
-						.text('')
-						;
+
 					d3.select('li#course_'+d.subject_code_course_number)
 						.classed('mouseover', false)
-						;						
+						;
+
+					// d3.select('#left-panel')
+					// 	.classed("visible", false)
+					// 	;
+
+					// d3.select('#course-title')
+					// 	.text('');
+					// 	;						
+
+					// d3.select('#course-description')
+					// 	.text('')
+					// 	;
+
+
 				})			    
 	      		// .each(function(d, i){	
 	      		// 	if(!d.isAnchor){
