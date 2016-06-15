@@ -25,6 +25,7 @@ for(var i = 0; i < coursesWithoutDesc.length; i++) {
 		if(subject_code === coursesDesc[j]['SubjectCode']
 			&& course_number === coursesDesc[j]['CourseNumber'].toString()
 			&& coursesDesc[j]['CourseDescription'] !== null
+			&& coursesDesc[j]['CourseDescription'] !== 'TBD'
 			&& coursesDesc[j]['CourseDescription'] !== 'This course does not yet have a description.'
 		   ) {
 			console.log('Match ' + c);
