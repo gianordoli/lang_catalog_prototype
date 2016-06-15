@@ -11,8 +11,8 @@ for(var i = 0; i < originalData.length; i++){
 	// var term = originalData[i]['TermDesc'];
 	var term = originalData[i]['TermCode'];
 	// console.log(term);
-	// if(term === 'Fall 2015'){
-	if(term === 'Fall 2015' || term === 'Spring 2015' || term === 'Summer 2015'){
+	if(term === 'Fall 2015'){
+	// if(term === 'Fall 2015' || term === 'Spring 2015' || term === 'Summer 2015'){
 		filteredData.push(originalData[i]);
 	}
 }
@@ -108,8 +108,8 @@ for(var SubjectCodeCourseNumber in courses){
 	coursesArray.push(newObj);
 }
 // console.log(coursesArray);
-// jsonfile.writeFileSync('exported_data/lang_courses_fall_2015.json', coursesArray);
-jsonfile.writeFileSync('exported_data/lang_courses_2015.json', coursesArray);
+jsonfile.writeFileSync('exported_data/lang_courses_fall_2015.json', coursesArray);
+// jsonfile.writeFileSync('exported_data/lang_courses_2015.json', coursesArray);
 
 
 /*---------- CATEGORIES ----------*/
@@ -123,5 +123,5 @@ for(var SubjectCodeCourseNumber in courses){
 	}
 }
 // console.log(pathsOfStudy);
-// jsonfile.writeFileSync('exported_data/lang_paths_of_study_fall_2015.json', pathsOfStudy);
-jsonfile.writeFileSync('exported_data/lang_paths_of_study_2015.json', pathsOfStudy);
+jsonfile.writeFileSync('exported_data/lang_paths_of_study_fall_2015.json', pathsOfStudy);
+// jsonfile.writeFileSync('exported_data/lang_paths_of_study_2015.json', pathsOfStudy);
