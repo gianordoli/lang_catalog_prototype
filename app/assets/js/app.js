@@ -216,10 +216,10 @@ app.main = (function(){
 		getAnchors(arcs);
 		drawGraph();
 	}
-
+	
 	/*-------------------- COURSES --------------------*/
 	var loadCourses = function(){
-		d3.json('assets/data/fall_2015/lang_courses_fall_2015.json', function(error, data) {
+		d3.json('assets/data/fall_2015/lang_courses_with_desc_fall_2015.json', function(error, data) {
 		// d3.json('assets/data/2015/lang_courses_2015.json', function(error, data) {
 			if (error) return console.warn(error);
 			// console.log('Loaded courses:');
@@ -662,9 +662,10 @@ app.main = (function(){
 			    })
 				.on('mouseover', function(d, i){
 					tip.show(d);
+					// console.log(d)
 					d3.select('#course-description')
 						// .text(d.description)
-						.text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec non bibendum sem, sit amet blandit justo. Quisque volutpat viverra nulla, sed vehicula purus auctor a. Nulla auctor luctus euismod. Proin sem arcu, molestie id sapien vitae, mollis consectetur lorem. Donec vulputate lacinia vulputate. Sed rhoncus lectus at sem accumsan, a vulputate metus mattis. Aenean vitae dictum nisl. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean ut lacus a elit lacinia gravida non nec nisl. In vel nisl nec enim imperdiet pretium dictum non elit. Proin scelerisque a lectus a hendrerit. Curabitur sit amet tempus turpis, vel malesuada augue. Maecenas dapibus arcu id est interdum, posuere fringilla augue sodales.");
+						.text(d['description']);
 						;
 
 					// Highlight course name on right-side list
