@@ -1,9 +1,11 @@
 var jsonfile = require('jsonfile');
 
-var coursesWithoutDesc = jsonfile.readFileSync('exported_data/lang_courses_fall_2015.json');
+// var coursesWithoutDesc = jsonfile.readFileSync('exported_data/lang_courses_fall_2015.json');
+var coursesWithoutDesc = jsonfile.readFileSync('exported_data/lang_courses_2015.json');
 // console.log(coursesWithoutDesc);
 
-var coursesDesc = jsonfile.readFileSync('original_data/Lang-Courses-fall_2015-20160509-xls.json');
+// var coursesDesc = jsonfile.readFileSync('original_data/Lang-Courses-fall_2015-20160509-xls.json');
+var coursesDesc = jsonfile.readFileSync('original_data/Lang-Courses-2011_2016-20160509.json');
 // console.log(coursesDesc);
 
 var coursesWithDesc = [];
@@ -52,6 +54,6 @@ console.log(coursesWithDesc.length);
 // 	}
 // }
 
-jsonfile.writeFileSync('exported_data/lang_courses_with_desc_fall_2015.json', coursesWithDesc);
+jsonfile.writeFileSync('exported_data/lang_courses_with_desc_2015.json', coursesWithDesc);
 
 
