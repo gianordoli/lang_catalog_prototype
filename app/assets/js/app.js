@@ -19,8 +19,8 @@ app.main = (function(){
 	/*------------------ CATEGORIES -------------------*/
 	// Categories change from term to term. Think about how to handle arc updates
 	var loadPathsOfStudy = function(){
-		d3.json('assets/data/fall_2015/lang_paths_of_study_fall_2015.json', function(error, data) {
-		// d3.json('assets/data/2015/lang_paths_of_study_2015.json', function(error, data) {						
+		// d3.json('assets/data/fall_2015/lang_paths_of_study_fall_2015.json', function(error, data) {
+		d3.json('assets/data/2015/lang_paths_of_study_2015.json', function(error, data) {						
 			if (error) return console.warn(error);
 			// console.log('Loaded categories:');
 			// console.log(data);
@@ -123,18 +123,17 @@ app.main = (function(){
 
 		// Labels
 		// <text>
-		var text = g.append("text")
+		var text = g.append("text");
 		
 			// <textPath>
-			var textPath = text.append("textPath")		
+			var textPath1stLine = text.append("textPath")		
 			    .attr("xlink:href",	function(d, i){
 			    	return '#arc_' + i;
 			    })
-			    // .attr("startOffset", 35)
 			    ;
 
 				// <tspan> 1stLine
-				textPath.append('tspan')
+				textPath1stLine.append('tspan')
 					.text(function(d, i){
 							return d.data['1stLine'];
 					})
@@ -145,34 +144,27 @@ app.main = (function(){
 							return - arcWeight + arcWeight*0.25;
 						}
 					})
-				// <tspan> 2ndLine
-				.each(function(d){
-					// console.log(d3.select(this));
-					if(d.data.hasOwnProperty('2ndLine')){
+					
+					// <tspan> 2ndLine
+					.each(function(d, i){
+						// console.log(d3.select(this));
+						if(d.data.hasOwnProperty('2ndLine')){
 
-						var parent = d3.select(this.parentNode);
-						var firstLineWidth = this.parentNode.getComputedTextLength();
+							var parent = d3.select(this.parentNode.parentNode);
+							var textPath = parent.append("textPath")		
+							    .attr("xlink:href", '#arc_' + i)
+							    ;
 
-						parent
-							.append('tspan')
-							.text(function(d, i){
-									return d.data['2ndLine'];
-							})
-							.each(function(d){
-								// var secondLineWidth = this.getComputedTextLength();
-								d3.select(this)
-									// .attr("dx", -(firstLineWidth + secondLineWidth)/1.7)	// CENTERED TEXT
-									// .attr("dx", -firstLineWidth)
-									// getComputedTextLength doesn't seem to be working right for the Neue font
-									// had to add this 1.28 as a manual compensation
-									.attr("dx", -firstLineWidth*1.28)
-									.attr("dy", arcWeight*0.35)
-									;
-							})
-							;
-					}
-				})
-				;
+							// <tspan> 2ndLine
+							textPath.append('tspan')
+								.attr("dy", arcWeight*0.35)
+								.text(function(d, i){
+										return d.data['2ndLine'];
+								})
+								;
+						}
+					})
+					;
 
 		function getAnchors(_arcs){
 
@@ -219,8 +211,8 @@ app.main = (function(){
 
 	/*-------------------- COURSES --------------------*/
 	var loadCourses = function(){
-		d3.json('assets/data/fall_2015/lang_courses_with_desc_fall_2015.json', function(error, data) {
-		// d3.json('assets/data/2015/lang_courses_2015.json', function(error, data) {
+		// d3.json('assets/data/fall_2015/lang_courses_with_desc_fall_2015.json', function(error, data) {
+		d3.json('assets/data/2015/lang_courses_with_desc_2015.json', function(error, data) {
 			if (error) return console.warn(error);
 			// console.log('Loaded courses:');
 			// console.log(data);
